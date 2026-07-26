@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teil 2 – Durchführung | CurveBall Challenge</title>
+  <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+
+<div class="theme-toggle" onclick="toggleTheme()" title="Dark/Light Mode">
+  <span id="theme-icon">☀️</span>
+</div>
+
+<div class="page">
+  <div class="page-header">
+    <a href="part1.html" class="back-link">← Zurück zu Teil 1</a>
+    <div class="badge">Teil 2 von 2</div>
+    <h1>Durchführung</h1>
+    <p>Acht Schritte durch den Angriff — mit Befehlen, Ausgaben und zwei eingebetteten Kontrollfragen.</p>
+  </div>
+
+  <!-- Downloads -->
+  <div class="mb-2">
+    <p class="text-muted" style="font-size:.9rem; margin-bottom:.8rem;">Skripte für die Durchführung:</p>
+    <div class="downloads">
+      <div class="download-item">
+        <div class="download-item-info">
+          <span class="download-icon">🐍</span>
+          <div>
+            <div class="download-name">curveball_demo.py</div>
+            <div class="download-desc">Demo-Skript für Schritt 3 – berechnet und verifiziert G' = k⁻¹ · Q</div>
+          </div>
+        </div>
+        <a class="download-btn" href="downloads/curveball_demo.py" download>↓ Download</a>
+      </div>
+      <div class="download-item">
+        <div class="download-item-info">
+          <span class="download-icon">🔑</span>
+          <div>
+            <div class="download-name">badecparams.py</div>
+            <div class="download-desc">Angriffsskript (6-Schritt-Walkthrough) für Schritt 4</div>
+          </div>
+        </div>
+        <a class="download-btn" href="downloads/badecparams.py" download>↓ Download</a>
+      </div>
+      <div class="download-item">
+        <div class="download-item-info">
+          <span class="download-icon">🌐</span>
+          <div>
+            <div class="download-name">httpd.py</div>
+            <div class="download-desc">TLS-Miniserver für Schritt 8 – liefert die gefälschte Kette aus</div>
+          </div>
+        </div>
+        <a class="download-btn" href="downloads/httpd.py" download>↓ Download</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schritte -->
+  <div class="steps">
+
+    <!-- Schritt 1 -->
+    <div class="step active">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <h2>Das Zielzertifikat</h2>
+        <p>
+          Inspiziere das angegriffene Zwischenzertifikat der COMODO ECC Extended Validation CA.
+          Achte auf das Feld <strong>pub</strong> (öffentlicher Punkt Q), die Seriennummer
+          und <strong>ASN1 OID: prime256v1</strong> — das bedeutet, dass hier explizite ECC-Parameter verwendet werden.
+          Das Feld <strong>CA: TRUE</strong> zeigt, dass dieses Zertifikat Unterschleife signieren darf.
+        </p>
+        <div class="code-block">openssl x509 -in comodo-intermediate.crt -text -noout</div>
+        <p>Relevante Felder in der Ausgabe:</p>
+        <div class="code-block">Subject: C=GB, O=COMODO CA Limited, CN=COMODO ECC Extended Validation CA ...
+Public Key Algorithm: id-ecPublicKey
+    ASN1 OID: prime256v1
+    pub:
+        04:3b:72:...
+X509v3 Basic Constraints: critical
+    CA:TRUE</div>
+      </div>
+    </div>
+
+    <!-- Schritt 2 -->
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <h2>Die Idee</h2>
+        <p>
+          Kein Befehl — nur Verstehen. Ordne die vier Code-Zeilen aus <code>get_exploit_generator()</code>
+          der Formel nebenan zu:
+        </p>
+        <div class="split-view">
+          <div class="split-panel">
+            <h4>Code (badecparams.py)</h4>
+            <div class="code-block" style="margin:0;">def get_exploit_generator(k, Qx, Qy, curve):
+    k_inverse = inverse_mod(k, curve.order)
+    Q = Point(curve.curve, Qx, Qy, curve.order)
+    G = Q * k_inverse
+    return (G.x(), G.y())</div>
+          </div>
+          <div class="split-panel">
+            <h4>Mathematische Grundlage</h4>
+            <div class="formula">G' = k⁻¹ · Q</div>
+            <p style="font-size:.85rem; color:var(--text-muted); margin:0;">
+              Da k · G' = k · k⁻¹ · Q = Q,
+              ist k ein gültiger privater Schlüssel
+              relativ zum Generator G' — ohne den
+              privaten Schlüssel der CA zu kennen.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Schritt 3 -->
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <h2>Selbst nachrechnen</h2>
+        <p>
+          Das Demo-Skript liest Q aus dem Zertifikat, wählt k zufällig (oder per Argument),
+          berechnet G' = k⁻¹ · Q und verifiziert die Beziehung an konkreten Zahlen.
+          Die letzten beiden Ausgabezeilen sind das Ergebnis:
+        </p>
+        <div class="code-block">python3 curveball_demo.py comodo-intermediate.crt 0</div>
+        <p>Erwartete Ausgabe (letzten Zeilen):</p>
+        <div class="code-block">  ✓  gültig mit G'   ← Angriff würde funktionieren
+  ✗  ungültig mit G  ← gepatchter Verifier würde ablehnen</div>
+        <p>
+          Die erste Zeile zeigt: mit dem manipulierten Generator G' ist die Signatur mathematisch korrekt.
+          Die zweite Zeile zeigt: mit dem Standard-Generator G schlägt die Verifikation fehl —
+          genau das ist der Effekt des Microsoft-Patches.
+        </p>
+      </div>
+    </div>
+
+    <!-- Schritt 4 -->
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <h2>Der Angriff</h2>
+        <p>
+          Das Angriffsskript führt alle sechs Phasen aus: Kette laden → k erzeugen →
+          G' berechnen → Zertifikat neu signieren → Endzertifikate ausstellen.
+          Nach dem Aufruf liegen im Verzeichnis:
+        </p>
+        <div class="code-block">./badecparams.py</div>
+        <p>Erzeugte Dateien:</p>
+        <div class="code-block">intermediateCA.crt   # Original + gefälschtes Zwischenzertifikat
+intermediateCA.key   # Angreifer-Schlüssel mit G' als Generator
+authenticode.crt / .key / .spc / .pvk
+localhost.crt / .key</div>
+        <p>
+          Dass in <code>intermediateCA.crt</code> zwei Zertifikate stehen — das originale und das gefälschte —
+          ist beabsichtigt: Der Verifier muss die Kette vollständig aufbauen können.
+        </p>
+      </div>
+    </div>
+
+    <!-- Schritt 5 + Kontrollfrage -->
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <h2>Die gefälschte CA</h2>
+        <p>
+          Inspiziere das gefälschte Zwischenzertifikat und lege die Ausgabe direkt neben die aus Schritt 1.
+          Das ist der Kern der Challenge.
+        </p>
+        <div class="code-block">openssl x509 -in intermediateCA.crt -text -noout</div>
+        <p>Was fällt auf? Beide Ausgaben zeigen denselben öffentlichen Punkt Q und dieselbe Seriennummer.
+           Der Parameterblock sieht jedoch anders aus — der Schlüssel zur Frage unten.</p>
+
+        <!-- Eingebettete Kontrollfrage -->
+        <div class="inline-question question-block" id="cq1">
+          <div class="question-number">⚡ Kontrollfrage</div>
+          <div class="question-text">Worin unterscheiden sich die Ausgaben von Schritt 1 und Schritt 5?</div>
+          <div class="options">
+            <label class="option-label"><input type="radio" name="cq1" value="a"><span class="radio-dot"></span>Im öffentlichen Schlüssel (Q-Bytes).</label>
+            <label class="option-label"><input type="radio" name="cq1" value="b"><span class="radio-dot"></span>In der Seriennummer.</label>
+            <label class="option-label"><input type="radio" name="cq1" value="c"><span class="radio-dot"></span>Statt <code>ASN1 OID: prime256v1</code> stehen ausgeschriebene Parameter mit eigenem Generator.</label>
+            <label class="option-label"><input type="radio" name="cq1" value="d"><span class="radio-dot"></span>Im Inhaber (Subject).</label>
+          </div>
+          <div class="action-row mt-2">
+            <button class="btn btn-secondary" type="button" onclick="checkInline('cq1','c','cq1Next')">Prüfen</button>
+            <span id="cq1Feedback" style="font-size:.9rem;"></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Schritt 6 -->
+    <div class="step" id="cq1Next" style="opacity:.3;pointer-events:none;">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <h2>Codesignatur</h2>
+        <p>
+          Das Authenticode-Paket enthält Microsoft-spezifische OIDs für Code-Signing.
+          Auf einem ungepatchten System ließe sich damit eine ausführbare Datei signieren,
+          die Windows als vertrauenswürdig einstuft.
+        </p>
+        <div class="code-block">openssl pkcs7 -inform DER -in authenticode.spc -print_certs -noout</div>
+        <p>In der Ausgabe sichtbar:</p>
+        <div class="code-block">1.3.6.1.4.1.311.2.1.21   # SPC_INDIVIDUAL_SP_KEY_PURPOSE_OBJID
+1.3.6.1.4.1.311.2.1.22   # SPC_COMMERCIAL_SP_KEY_PURPOSE_OBJID</div>
+      </div>
+    </div>
+
+    <!-- Schritt 7 -->
+    <div class="step">
+      <div class="step-number">7</div>
+      <div class="step-content">
+        <h2>Das EV-Zertifikat</h2>
+        <p>
+          <code>localhost.crt</code> ist ein selbst erzeugtes TLS-Zertifikat mit Extended-Validation-Kennung.
+          Es ist auf <code>nsa.gov</code> und <code>microsoft.com</code> ausgestellt —
+          signiert von der gefälschten CA.
+        </p>
+        <div class="code-block">openssl x509 -in localhost.crt -text -noout</div>
+        <p>Relevante Felder:</p>
+        <div class="code-block">Subject: ... O=PayPal, Inc. ...
+X509v3 Subject Alternative Name:
+    DNS:localhost, DNS:nsa.gov, DNS:www.nsa.gov,
+    DNS:microsoft.com, DNS:www.microsoft.com
+Certificate Policies:
+    1.3.6.1.4.1.6449.1.2.1.5.1   # COMODO EV-Policy-OID</div>
+      </div>
+    </div>
+
+    <!-- Schritt 8 + Abschluss-Frage -->
+    <div class="step">
+      <div class="step-number">8</div>
+      <div class="step-content">
+        <h2>Über die Leitung</h2>
+        <p>
+          Starte den TLS-Server und verbinde dich mit OpenSSL.
+          Der Handshake liefert die vollständige gefälschte Kette — das Angriffsmaterial
+          geht jetzt über das Netz, liegt nicht mehr nur als Datei vor.
+        </p>
+        <div class="code-block">sudo ./httpd.py localhost.key</div>
+        <p>In einem zweiten Terminal:</p>
+        <div class="code-block">openssl s_client -connect localhost:8443 -showcerts</div>
+        <p>In der Ausgabe sind drei Zertifikate sichtbar: Endzertifikat → gefälschte CA → Original-CA.
+           Ein ungepatchter Windows-Client würde diese Kette akzeptieren und
+           <em>nsa.gov</em> als Extended-Validation-gesichert anzeigen.</p>
+
+        <!-- Abschluss-Kontrollfrage -->
+        <div class="inline-question question-block mt-2" id="cq2">
+          <div class="question-number">⚡ Abschlusskontrolle</div>
+          <div class="question-text">
+            Welche zwei Bedingungen müssen gleichzeitig erfüllt sein, damit der CurveBall-Angriff auf einem Windows-System funktioniert?
+          </div>
+          <div class="options">
+            <label class="option-label"><input type="radio" name="cq2" value="a"><span class="radio-dot"></span>SHA-256 muss gebrochen sein, und der Angreifer muss den privaten Schlüssel der CA kennen.</label>
+            <label class="option-label"><input type="radio" name="cq2" value="b"><span class="radio-dot"></span>Der Verifier übernimmt den Generator aus dem Zertifikat, und der öffentliche Punkt stimmt mit dem der echten CA überein.</label>
+            <label class="option-label"><input type="radio" name="cq2" value="c"><span class="radio-dot"></span>Das System nutzt Firefox, und die Seriennummer ist doppelt.</label>
+            <label class="option-label"><input type="radio" name="cq2" value="d"><span class="radio-dot"></span>Das Zertifikat ist abgelaufen, und der Angreifer hat Netzwerkzugang.</label>
+          </div>
+          <div class="action-row mt-2">
+            <button class="btn btn-secondary" type="button" onclick="checkInline('cq2','b','finalSection')">Prüfen</button>
+            <span id="cq2Feedback" style="font-size:.9rem;"></span>
+          </div>
+        </div>
+
+        <!-- Abschluss -->
+        <div id="finalSection" class="score-bar mt-3" style="display:none;">
+          <div>
+            <div class="score-text">🏁 Challenge abgeschlossen</div>
+            <div class="score-detail">Du hast alle Schritte und beide Kontrollfragen erfolgreich absolviert.</div>
+          </div>
+          <a href="index.html" class="btn btn-primary">← Zurück zur Übersicht</a>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- .steps -->
+</div><!-- .page -->
+
+<script src="static/theme.js"></script>
+<script>
+function checkInline(questionId, correctValue, unlockId) {
+  const block    = document.getElementById(questionId);
+  const chosen   = document.querySelector(`input[name="${questionId}"]:checked`);
+  const feedback = document.getElementById(questionId + 'Feedback');
+  const labels   = block.querySelectorAll('.option-label');
+
+  labels.forEach(l => l.classList.remove('was-correct', 'was-wrong'));
+  block.classList.remove('correct', 'incorrect');
+
+  if (!chosen) {
+    feedback.textContent = 'Bitte eine Antwort auswählen.';
+    feedback.style.color = 'var(--warn)';
+    return;
+  }
+
+  if (chosen.value === correctValue) {
+    block.classList.add('correct');
+    chosen.closest('.option-label').classList.add('was-correct');
+    feedback.textContent = '✓ Richtig!';
+    feedback.style.color = 'var(--success)';
+
+    // Unlock nächsten Abschnitt
+    const next = document.getElementById(unlockId);
+    if (next) {
+      next.style.opacity = '';
+      next.style.pointerEvents = '';
+      next.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  } else {
+    block.classList.add('incorrect');
+    chosen.closest('.option-label').classList.add('was-wrong');
+    // Richtige markieren
+    const correctInput = block.querySelector(`input[value="${correctValue}"]`);
+    if (correctInput) correctInput.closest('.option-label').classList.add('was-correct');
+    feedback.textContent = '✗ Nicht ganz — schau dir den Unterschied nochmal an.';
+    feedback.style.color = 'var(--error)';
+  }
+}
+</script>
+
+</body>
+</html>

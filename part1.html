@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teil 1 – Einführung | CurveBall Challenge</title>
+  <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<div class="theme-toggle" onclick="toggleTheme()" title="Dark/Light Mode">
+  <span id="theme-icon">☀️</span>
+</div>
+
+<div class="page">
+  <div class="page-header">
+    <a href="index.html" class="back-link">← Zurück zur Übersicht</a>
+    <div class="badge">Teil 1 von 2</div>
+    <h1>Einführung</h1>
+    <p>Sechs Fragen zur Schwachstelle CVE-2020-0601 (CurveBall). Alle sechs müssen korrekt beantwortet werden, um zur Durchführung weiterzukommen.</p>
+  </div>
+
+  <form class="quiz-form" id="quizForm" onsubmit="return false;">
+
+    <!-- Frage 1 -->
+    <div class="question-block" id="q1">
+      <div class="question-number">Frage 1 von 6</div>
+      <div class="question-text">Woran erkennt Windows, dass ein Wurzelzertifikat vertrauenswürdig ist?</div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q1" value="a"><span class="radio-dot"></span>Es rechnet die Selbstsignatur nach.</label>
+        <label class="option-label"><input type="radio" name="q1" value="b"><span class="radio-dot"></span>Es vergleicht das Zertifikat mit einem Eintrag im eigenen Speicher.</label>
+        <label class="option-label"><input type="radio" name="q1" value="c"><span class="radio-dot"></span>Es fragt bei der Zertifizierungsstelle nach.</label>
+        <label class="option-label"><input type="radio" name="q1" value="d"><span class="radio-dot"></span>Es prüft, ob der Gültigkeitszeitraum noch läuft.</label>
+      </div>
+    </div>
+
+    <!-- Frage 2 -->
+    <div class="question-block" id="q2">
+      <div class="question-number">Frage 2 von 6</div>
+      <div class="question-text">Welchen Kurvenparameter verändert der Angriff?</div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q2" value="a"><span class="radio-dot"></span>Den Primzahlmodul <em>p</em>.</label>
+        <label class="option-label"><input type="radio" name="q2" value="b"><span class="radio-dot"></span>Die Ordnung <em>n</em>.</label>
+        <label class="option-label"><input type="radio" name="q2" value="c"><span class="radio-dot"></span>Den Basispunkt <em>G</em>.</label>
+        <label class="option-label"><input type="radio" name="q2" value="d"><span class="radio-dot"></span>Die Koeffizienten <em>a</em> und <em>b</em>.</label>
+      </div>
+    </div>
+
+    <!-- Frage 3 -->
+    <div class="question-block" id="q3">
+      <div class="question-number">Frage 3 von 6</div>
+      <div class="question-text">Kennt der Angreifer danach den privaten Schlüssel der echten CA?</div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q3" value="a"><span class="radio-dot"></span>Ja, er berechnet ihn aus dem öffentlichen Punkt.</label>
+        <label class="option-label"><input type="radio" name="q3" value="b"><span class="radio-dot"></span>Ja, er liest ihn aus dem Zertifikat.</label>
+        <label class="option-label"><input type="radio" name="q3" value="c"><span class="radio-dot"></span>Nein, er baut einen zweiten Schlüssel zum selben öffentlichen Punkt.</label>
+        <label class="option-label"><input type="radio" name="q3" value="d"><span class="radio-dot"></span>Nein, er umgeht die Signaturprüfung ganz.</label>
+      </div>
+    </div>
+
+    <!-- Frage 4 -->
+    <div class="question-block" id="q4">
+      <div class="question-number">Frage 4 von 6</div>
+      <div class="question-text">Warum nimmt ein ungepatchtes Windows die gefälschte Signatur an?</div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q4" value="a"><span class="radio-dot"></span>Weil die Signatur gar nicht geprüft wird.</label>
+        <label class="option-label"><input type="radio" name="q4" value="b"><span class="radio-dot"></span>Weil der Verifier den Generator aus dem Zertifikat übernimmt.</label>
+        <label class="option-label"><input type="radio" name="q4" value="c"><span class="radio-dot"></span>Weil SHA-256 als gebrochen gilt.</label>
+        <label class="option-label"><input type="radio" name="q4" value="d"><span class="radio-dot"></span>Weil die Seriennummer doppelt vorkommt.</label>
+      </div>
+    </div>
+
+    <!-- Frage 5 -->
+    <div class="question-block" id="q5">
+      <div class="question-number">Frage 5 von 6</div>
+      <div class="question-text">Was bedeutet es, wenn ein Zertifikat <em>explizite Parameter</em> trägt?</div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q5" value="a"><span class="radio-dot"></span>Es nennt die Kurve über einen Object Identifier.</label>
+        <label class="option-label"><input type="radio" name="q5" value="b"><span class="radio-dot"></span>Es schreibt alle Kurvenparameter vollständig aus.</label>
+        <label class="option-label"><input type="radio" name="q5" value="c"><span class="radio-dot"></span>Es enthält zusätzlich den privaten Schlüssel.</label>
+        <label class="option-label"><input type="radio" name="q5" value="d"><span class="radio-dot"></span>Es verzichtet auf eine Signatur.</label>
+      </div>
+    </div>
+
+    <!-- Frage 6 -->
+    <div class="question-block" id="q6">
+      <div class="question-number">Frage 6 von 6</div>
+      <div class="question-text">Warum war Firefox nie betroffen?</div>
+      <div class="options">
+        <label class="option-label"><input type="radio" name="q6" value="a"><span class="radio-dot"></span>Firefox nutzt ausschließlich RSA.</label>
+        <label class="option-label"><input type="radio" name="q6" value="b"><span class="radio-dot"></span>Firefox prüft Zertifikate über die Windows CryptoAPI.</label>
+        <label class="option-label"><input type="radio" name="q6" value="c"><span class="radio-dot"></span>Die Network Security Services unterstützen keine expliziten EC-Parameter.</label>
+        <label class="option-label"><input type="radio" name="q6" value="d"><span class="radio-dot"></span>Firefox akzeptiert nur Zertifikate mit Extended Validation.</label>
+      </div>
+    </div>
+
+    <!-- Score + Buttons -->
+    <div class="score-bar" id="scoreBar" style="display:none;">
+      <div>
+        <div class="score-text" id="scoreText">—</div>
+        <div class="score-detail" id="scoreDetail"></div>
+      </div>
+      <div class="score-number" id="scoreNumber">—</div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn btn-primary" type="button" onclick="checkAnswers()">Korrigieren</button>
+      <a href="../../Downloads/curveball-challenge-webapp/curveball-challenge-webapp/part2.html" class="btn btn-secondary hidden" id="nextBtn">Weiter zu Teil 2 →</a>
+    </div>
+
+  </form>
+</div>
+
+<script src="static/theme.js"></script>
+<script src="static/quiz.js"></script>
+</body>
+</html>
