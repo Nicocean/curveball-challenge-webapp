@@ -36,6 +36,7 @@ Um die Webanwendung lokal zu starten, folge diesen Schritten:
 python3 server.py
 ```
 
-3. Öffne deinen Browser und rufe die folgende Adresse auf:
-
+3. Dein Browser ruft nun automatisch die Seite auf, aber falls nicht: 
 [http://localhost:8080](http://localhost:8080)
+
+4. Viel Spass! :)
