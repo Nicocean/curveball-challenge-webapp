@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Teil 1 – Einführung | CurveBall Challenge</title>
-  <link rel="stylesheet" href="static/style.css">
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 <canvas id="confetti-canvas"></canvas>
@@ -14,8 +14,12 @@
 </div>
 
 <div class="page">
+  <nav class="top-nav">
+    <a href="/index.html" class="nav-link">← Menü</a>
+    <a href="/part2.html" class="nav-link">Teil 2: Durchführung →</a>
+  </nav>
+
   <div class="page-header">
-    <a href="index.html" class="back-link">← Zurück zur Übersicht</a>
     <div class="badge">Teil 1 von 2</div>
     <h1>Einführung</h1>
     <p>Sechs Fragen zur Schwachstelle CVE-2020-0601 (CurveBall). Alle sechs müssen korrekt beantwortet werden, um zur Durchführung weiterzukommen.</p>
@@ -106,13 +110,15 @@
 
     <div class="action-row">
       <button class="btn btn-primary" type="button" onclick="checkAnswers()">Korrigieren</button>
-      <a href="../../Downloads/curveball-challenge-webapp/curveball-challenge-webapp/part2.html" class="btn btn-secondary hidden" id="nextBtn">Weiter zu Teil 2 →</a>
+      <a href="/part2.html" class="btn btn-secondary hidden" id="nextBtn">Weiter zu Teil 2 →</a>
     </div>
 
   </form>
 </div>
 
-<script src="static/theme.js"></script>
-<script src="static/quiz.js"></script>
+<script src="/static/file-guard.js"></script>
+<script src="/static/theme.js"></script>
+<script src="/static/theorie.js"></script>
+<script src="/static/quiz.js"></script>
 </body>
 </html>

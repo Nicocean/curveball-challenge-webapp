@@ -183,6 +183,167 @@ a:hover { text-decoration: underline; }
 }
 .back-link:hover { color: var(--accent); text-decoration: none; }
 
+/* ======================================================================
+   THEORIE-OVERLAY (Modal)
+   ====================================================================== */
+.theorie-fab {
+  position: fixed;
+  top: 1rem;
+  right: 5.5rem;
+  z-index: 100;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transition: transform 0.15s, box-shadow 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.theorie-fab:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+.theorie-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 200;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem 1rem;
+  overflow-y: auto;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: fadeIn 0.18s ease-out;
+}
+.theorie-overlay.open { display: flex; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.theorie-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  max-width: 780px;
+  width: 100%;
+  padding: 2rem 2.2rem;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  animation: slideUp 0.22s ease-out;
+  position: relative;
+}
+.theorie-modal h2 {
+  font-size: 1.5rem;
+  margin: 0 0 0.6rem;
+  padding-right: 2.5rem;
+}
+.theorie-modal h3 {
+  font-size: 1rem;
+  color: var(--accent);
+  margin: 1.4rem 0 0.5rem;
+  font-weight: 700;
+}
+.theorie-modal p, .theorie-modal ul {
+  font-size: 0.94rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+.theorie-modal ul { padding-left: 1.2rem; }
+.theorie-modal li { margin-bottom: 0.3rem; }
+.theorie-modal code {
+  background: var(--surface2);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 0.86em;
+}
+.theorie-lead {
+  padding: 0.9rem 1rem;
+  background: var(--surface2);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  margin-bottom: 1.4rem;
+  font-size: 0.9rem;
+}
+.formula-box {
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  padding: 0.9rem 1.2rem;
+  background: var(--surface2);
+  border-radius: 6px;
+  text-align: center;
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.theorie-footer {
+  margin-top: 1.8rem;
+  padding: 0.9rem 1rem;
+  background: var(--surface2);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  border-top: 2px solid var(--accent);
+}
+.theorie-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.theorie-close:hover { background: var(--surface2); color: var(--text); }
+
+@media (max-width: 600px) {
+  .theorie-fab { right: 4.5rem; padding: 0.5rem 0.8rem; font-size: 0.78rem; }
+  .theorie-modal { padding: 1.5rem 1.2rem; }
+}
+
+/* Sekundärnavigation oben (Menü & anderer Teil) */
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed var(--border);
+  flex-wrap: wrap;
+}
+.nav-link {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+  text-decoration: none;
+}
+.nav-link:hover {
+  color: var(--accent);
+  background: var(--surface2);
+  text-decoration: none;
+}
+
 .page-header .badge { margin-bottom: 0.8rem; }
 .page-header h1 {
   font-size: clamp(1.8rem, 4vw, 2.4rem);

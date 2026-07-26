@@ -1,0 +1,69 @@
+<!-- Wird per fetch() dynamisch in den Modal-Body geladen -->
+<div class="theorie-content">
+
+  <div class="theorie-lead">
+    <strong>CVE-2020-0601 (CurveBall, ChainOfFools)</strong> — eine am 14. Januar 2020 veröffentlichte
+    Spoofing-Schwachstelle in der Windows-Zertifikatsprüfung. Betroffen: Windows 10 und die Server-Versionen
+    2016/2019. NIST-Score: <strong>8.1 (High)</strong>.
+  </div>
+
+  <h3>1 · Das Prinzip in einem Satz</h3>
+  <p>
+    Windows entscheidet vor dem Patch, ob es einem CA-Zertifikat vertraut, indem es <em>öffentlichen Punkt Q
+    und Seriennummer</em> mit einem Eintrag im eigenen Cache abgleicht — <strong>die zugehörigen Kurvenparameter
+    prüft es jedoch nicht</strong>. Damit lässt sich eine CA fälschen, ohne ihren privaten Schlüssel zu kennen.
+  </p>
+
+  <h3>2 · Mathematische Grundlage</h3>
+  <p>
+    Bei ECDSA ist der private Schlüssel <code>k</code> eine ganze Zahl und der öffentliche Punkt
+    <code>Q&nbsp;=&nbsp;k&nbsp;·&nbsp;G</code>, wobei <code>G</code> der Standard-Generator der Kurve ist.
+    Der Angriff dreht die Beziehung um: statt aus <code>k</code> und <code>G</code> den Punkt <code>Q</code>
+    zu berechnen, sucht sich der Angreifer <em>selbst</em> ein <code>k</code> und leitet daraus einen passenden
+    Generator <code>G'</code> ab:
+  </p>
+  <div class="formula-box">
+    G' = k⁻¹ · Q &nbsp;&nbsp;&#8658;&nbsp;&nbsp; k · G' = k · k⁻¹ · Q = Q
+  </div>
+  <p style="margin-top:0.6rem;">
+    Ergebnis: Der Angreifer besitzt ein gültiges <code>(k, G')</code>-Paar zum <em>echten</em> öffentlichen
+    Punkt <code>Q</code> der Ziel-CA — <strong>ohne deren privaten Schlüssel</strong>. Er kann jetzt Zertifikate
+    ausstellen, die eine Signatur tragen, welche mathematisch zu <code>Q</code> passt.
+  </p>
+
+  <h3>3 · Warum funktioniert das gegen Windows?</h3>
+  <p>
+    Der Trick liegt im Zertifikatsformat X.509: Die verwendete Kurve darf entweder über eine kurze OID
+    (z.&nbsp;B. <code>prime256v1</code>) <em>oder</em> als vollständig ausgeschriebene <strong>explizite
+    Parameter</strong> angegeben werden — inklusive des Generators. Ungepatchte CryptoAPI-Versionen
+    übernehmen den Generator aus dem Zertifikat, statt ihn gegen den Standard zu prüfen. Da <code>Q</code>
+    und Seriennummer der echten CA identisch sind, wird die Kette akzeptiert.
+  </p>
+
+  <h3>4 · Auswirkungen</h3>
+  <ul>
+    <li><strong>Codesignatur:</strong> gefälschte Windows-Executables erscheinen als von legitimem Hersteller signiert.</li>
+    <li><strong>TLS-MITM:</strong> HTTPS-Verbindungen zu <em>beliebigen</em> Domains lassen sich abfangen, ohne Zertifikatswarnung.</li>
+    <li><strong>Update-Verteilung:</strong> theoretisch signierte Windows-Updates aus fremder Quelle.</li>
+  </ul>
+
+  <h3>5 · Warum war Firefox nicht betroffen?</h3>
+  <p>
+    Firefox nutzt <strong>Network Security Services</strong> (NSS) statt der Windows CryptoAPI. NSS akzeptiert
+    <em>keine</em> Zertifikate mit expliziten EC-Parametern — der Angriffsvektor existiert dort schlicht nicht.
+  </p>
+
+  <h3>6 · Der Patch</h3>
+  <p>
+    Am selben Tag der Offenlegung (14. Januar 2020) veröffentlichte Microsoft ein Update, das
+    <code>Crypt32.dll</code> so anpasst, dass beim Cache-Abgleich <em>alle</em> Kurvenparameter — insbesondere
+    der Generator — geprüft werden müssen. Bekannte Ausnutzungen in freier Wildbahn: keine.
+  </p>
+
+  <div class="theorie-footer">
+    <strong>Kernbotschaft:</strong> Der Angriff bricht keine Kryptographie. Er nutzt eine
+    <em>Implementierungslücke</em> in einer Prüfungsroutine aus — der zugrundeliegende ECDSA-Algorithmus
+    bleibt mathematisch intakt.
+  </div>
+
+</div>

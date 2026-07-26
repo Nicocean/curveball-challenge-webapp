@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CurveBall Challenge – CVE-2020-0601</title>
-  <link rel="stylesheet" href="static/style.css">
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
   <div class="theme-toggle" onclick="toggleTheme()" title="Dark/Light Mode">
@@ -19,13 +19,13 @@
         Eine Windows CryptoAPI-Schwachstelle — verstehen, nachvollziehen, durchführen.
       </p>
       <div class="card-grid">
-        <a href="../../Downloads/curveball-challenge-webapp/curveball-challenge-webapp/part1.html" class="card">
+        <a href="/part1.html" class="card">
           <div class="card-number">01</div>
           <h2>Einführung</h2>
           <p>Sechs Fragen zum Verständnis der Schwachstelle. Beantworte alle richtig, um weiterzumachen.</p>
           <span class="card-arrow">→</span>
         </a>
-        <a href="../../Downloads/curveball-challenge-webapp/curveball-challenge-webapp/part2.html" class="card">
+        <a href="/part2.html" class="card">
           <div class="card-number">02</div>
           <h2>Durchführung</h2>
           <p>Acht Schritte durch den Angriff — mit Befehlen, Erklärungen und zwei Kontrollfragen.</p>
@@ -35,6 +35,8 @@
     </div>
   </main>
 
-  <script src="static/theme.js"></script>
+  <script src="/static/file-guard.js"></script>
+  <script src="/static/theme.js"></script>
+  <script src="/static/theorie.js"></script>
 </body>
 </html>

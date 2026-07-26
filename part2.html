@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Teil 2 – Durchführung | CurveBall Challenge</title>
-  <link rel="stylesheet" href="static/style.css">
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
@@ -13,8 +13,12 @@
 </div>
 
 <div class="page">
+  <nav class="top-nav">
+    <a href="/index.html" class="nav-link">← Menü</a>
+    <a href="/part1.html" class="nav-link">← Teil 1: Einführung</a>
+  </nav>
+
   <div class="page-header">
-    <a href="part1.html" class="back-link">← Zurück zu Teil 1</a>
     <div class="badge">Teil 2 von 2</div>
     <h1>Durchführung</h1>
     <p>Acht Schritte durch den Angriff — mit Befehlen, Ausgaben und zwei eingebetteten Kontrollfragen.</p>
@@ -32,7 +36,7 @@
             <div class="download-desc">Demo-Skript für Schritt 3 – berechnet und verifiziert G' = k⁻¹ · Q</div>
           </div>
         </div>
-        <a class="download-btn" href="downloads/curveball_demo.py" download>↓ Download</a>
+        <a class="download-btn" href="/downloads/curveball_demo.py" download>↓ Download</a>
       </div>
       <div class="download-item">
         <div class="download-item-info">
@@ -42,7 +46,7 @@
             <div class="download-desc">Angriffsskript (6-Schritt-Walkthrough) für Schritt 4</div>
           </div>
         </div>
-        <a class="download-btn" href="downloads/badecparams.py" download>↓ Download</a>
+        <a class="download-btn" href="/downloads/badecparams.py" download>↓ Download</a>
       </div>
       <div class="download-item">
         <div class="download-item-info">
@@ -52,7 +56,7 @@
             <div class="download-desc">TLS-Miniserver für Schritt 8 – liefert die gefälschte Kette aus</div>
           </div>
         </div>
-        <a class="download-btn" href="downloads/httpd.py" download>↓ Download</a>
+        <a class="download-btn" href="/downloads/httpd.py" download>↓ Download</a>
       </div>
     </div>
   </div>
@@ -271,7 +275,7 @@ Certificate Policies:
             <div class="score-text">🏁 Challenge abgeschlossen</div>
             <div class="score-detail">Du hast alle Schritte und beide Kontrollfragen erfolgreich absolviert.</div>
           </div>
-          <a href="index.html" class="btn btn-primary">← Zurück zur Übersicht</a>
+          <a href="/index.html" class="btn btn-primary">← Zurück zur Übersicht</a>
         </div>
 
       </div>
@@ -280,7 +284,9 @@ Certificate Policies:
   </div><!-- .steps -->
 </div><!-- .page -->
 
-<script src="static/theme.js"></script>
+<script src="/static/file-guard.js"></script>
+<script src="/static/theme.js"></script>
+<script src="/static/theorie.js"></script>
 <script>
 function checkInline(questionId, correctValue, unlockId) {
   const block    = document.getElementById(questionId);
