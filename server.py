@@ -39,13 +39,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 def main() -> None:
     print()
-    print("  ╔══════════════════════════════════════════════════════════════════════╗")
-    print("  ║   CurveBall Challenge — Lokaler Server                               ║")
-    print("  ╠══════════════════════════════════════════════════════════════════════╣")
-    print(f"  ║   URL:   http://localhost:{PORT}                                       ║")
-    print(f"  ║   Root:  {BASE_DIR[:54]:<38}      ║")
-    print("  ║   Stop:  Strg+C                                                      ║")
-    print("  ╚══════════════════════════════════════════════════════════════════════╝")
+    print("  ╔═══════════════════════════════════════════════════╗")
+    print("  ║   CurveBall Challenge — Lokaler Server            ║")
+    print("  ╠═══════════════════════════════════════════════════╣")
+    print(f"  ║   URL:   http://localhost:{PORT}                    ║")
+    print(f"  ║   Root:  {BASE_DIR[:38]:<38}   ║")
+    print("  ║   Stop:  Strg+C                                   ║")
+    print("  ╚═══════════════════════════════════════════════════╝")
     print()
 
     # Falls ein Vorgänger den Port noch blockiert

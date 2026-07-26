@@ -21,19 +21,18 @@ function checkAnswers() {
     if (isCorrect) {
       score++;
       block.classList.add('correct');
+      // Nur die ausgewählte (richtige) Option grün markieren — die anderen bleiben neutral
+      if (chosen) {
+        chosen.closest('.option-label').classList.add('was-correct');
+      }
       allCorrect.push(true);
     } else {
       block.classList.add('incorrect');
       allCorrect.push(false);
 
-      // Falsche Auswahl markieren
+      // NUR die falsche Auswahl markieren — die richtige Antwort NICHT verraten
       if (chosen) {
         chosen.closest('.option-label').classList.add('was-wrong');
-      }
-      // Richtige markieren
-      const correctInput = block.querySelector(`input[value="${correct}"]`);
-      if (correctInput) {
-        correctInput.closest('.option-label').classList.add('was-correct');
       }
     }
   }
@@ -58,7 +57,7 @@ function checkAnswers() {
   } else {
     const wrong = TOTAL - score;
     txt.textContent = `${wrong} Antwort${wrong > 1 ? 'en' : ''} noch falsch.`;
-    detail.textContent = 'Falsche Antworten sind rot markiert, die richtige Antwort grün. Passe deine Auswahl an und klicke erneut auf "Korrigieren".';
+    detail.textContent = 'Rot markierte Antworten sind falsch. Passe deine Auswahl an und klicke erneut auf "Korrigieren".';
     nextBtn.classList.add('hidden');
   }
 }

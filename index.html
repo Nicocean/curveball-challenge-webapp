@@ -13,7 +13,7 @@
 
   <main class="landing">
     <div class="hero">
-      <div class="badge">CVE-2020-0601</div>
+      <button type="button" class="badge badge-clickable" onclick="openCveInfo()" aria-haspopup="dialog">CVE-2020-0601</button>
       <h1>CurveBall<br><span class="accent">Challenge</span></h1>
       <p class="subtitle">
         Eine Windows CryptoAPI-Schwachstelle — verstehen, nachvollziehen, durchführen.
@@ -35,8 +35,46 @@
     </div>
   </main>
 
+  <!-- CVE Info-Overlay -->
+  <div id="cve-modal" class="cve-modal-backdrop" onclick="closeCveInfo(event)" hidden>
+    <div class="cve-modal" role="dialog" aria-modal="true" aria-labelledby="cve-modal-title" onclick="event.stopPropagation()">
+      <button class="cve-modal-close" onclick="closeCveInfo()" aria-label="Schließen">×</button>
+      <div class="cve-modal-header">
+        <span class="cve-severity">CVSS 8.1 · Hoch</span>
+        <h2 id="cve-modal-title">CVE-2020-0601</h2>
+        <p class="cve-alias">Alias: <em>CurveBall</em> · auch: <em>ChainOfFools</em></p>
+      </div>
+      <div class="cve-modal-body">
+        <dl class="cve-facts">
+          <div><dt>Veröffentlicht</dt><dd>14. Januar 2020</dd></div>
+          <div><dt>Entdeckt von</dt><dd>NSA · gemeldet an Microsoft</dd></div>
+          <div><dt>Betroffen</dt><dd>Windows 10, Windows Server 2016 &amp; 2019 (crypt32.dll)</dd></div>
+          <div><dt>Klasse</dt><dd>Fehlerhafte Signaturprüfung von ECC-Zertifikaten</dd></div>
+          <div><dt>Patch</dt><dd>Microsoft Update KB4534273 (Januar-2020-Patchday)</dd></div>
+        </dl>
+        <p class="cve-summary">
+          Die Windows CryptoAPI (<code>crypt32.dll</code>) prüft bei ECC-Zertifikaten nur den öffentlichen Punkt <em>Q</em>, nicht den Basispunkt <em>G</em>. Ein Angreifer kann ein Zertifikat mit verändertem <em>G'</em> erzeugen, dazu einen zweiten privaten Schlüssel berechnen — und Windows nimmt die daraus erzeugte Signatur als gültig an. Dadurch lassen sich beliebige Domains &amp; Codesignaturen fälschen.
+        </p>
+      </div>
+    </div>
+  </div>
+
   <script src="/static/file-guard.js"></script>
   <script src="/static/theme.js"></script>
   <script src="/static/theorie.js"></script>
+  <script>
+    function openCveInfo() {
+      document.getElementById('cve-modal').hidden = false;
+      document.body.style.overflow = 'hidden';
+    }
+    function closeCveInfo(e) {
+      if (e && e.target.closest('.cve-modal') && !e.target.classList.contains('cve-modal-backdrop')) return;
+      document.getElementById('cve-modal').hidden = true;
+      document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !document.getElementById('cve-modal').hidden) closeCveInfo();
+    });
+  </script>
 </body>
 </html>

@@ -7,8 +7,11 @@
   --text:        #e2e6f0;
   --text-muted:  #7a84a0;
   --accent:      #4f8ef7;
+  --accent-hi:   #9ec3ff;  /* Neon-Highlight für Wave */
   --accent-dim:  #1e3a6e;
   --accent-glow: rgba(79,142,247,0.18);
+  --accent-glow-strong: rgba(79,142,247,0.55);
+  --accent-neon: rgba(158,195,255,0.75); /* Neon-Highlight rgba */
   --success:     #34c97a;
   --error:       #f05c6e;
   --warn:        #f5a623;
@@ -27,8 +30,11 @@
   --text:        #1a1e2e;
   --text-muted:  #6570a0;
   --accent:      #2563eb;
+  --accent-hi:   #60a5fa;  /* Neon-Highlight für Wave */
   --accent-dim:  #dbeafe;
   --accent-glow: rgba(37,99,235,0.12);
+  --accent-glow-strong: rgba(37,99,235,0.4);
+  --accent-neon: rgba(96,165,250,0.6);
   --success:     #16a34a;
   --error:       #dc2626;
   --warn:        #d97706;
@@ -145,10 +151,225 @@ a:hover { text-decoration: underline; }
 .card-number {
   font-size: 2.8rem;
   font-weight: 800;
-  color: var(--border);
+  color: var(--text-muted);
+  opacity: 0.55;
   line-height: 1;
   margin-bottom: 0.5rem;
+  transition: color 0.3s, opacity 0.3s, text-shadow 0.3s;
 }
+.card:hover .card-number { opacity: 1; }
+/* Wave-Glow selbst wird weiter unten definiert (kombiniert mit .hero h1 .accent) */
+
+/* ─── Wave-Glow: Neon-Highlight wandert von links nach rechts ──────────── */
+/* Basis-Text in Akzentfarbe; Gradient-Strip mit hellerer Neon-Farbe läuft
+   durch via background-clip: text. Subtiler mit-wandernder Glow via drop-shadow. */
+@keyframes wave-glow {
+  0% {
+    background-position: 0% 0;
+    filter: drop-shadow(0 0 3px var(--accent-glow));
+  }
+  50% {
+    filter: drop-shadow(0 0 5px var(--accent-neon));
+  }
+  100% {
+    background-position: 100% 0;
+    filter: drop-shadow(0 0 3px var(--accent-glow));
+  }
+}
+
+/* Gemeinsame Wave-Basis (wird auf Elemente angewendet) */
+.wave-glow,
+.hero h1 .accent,
+.card:hover .card-number {
+  color: var(--accent);
+  background-image: linear-gradient(
+    100deg,
+    var(--accent) 0%,
+    var(--accent) 42%,
+    var(--accent-hi) 50%,
+    var(--accent) 58%,
+    var(--accent) 100%
+  );
+  background-size: 220% 100%;
+  background-position: 0% 0;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: wave-glow 3.6s linear infinite;
+}
+
+/* Kartennummer bei Hover: schnellere Wave */
+.card:hover .card-number {
+  animation-duration: 2.4s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card:hover .card-number,
+  .hero h1 .accent,
+  .wave-glow {
+    animation: none;
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    color: var(--accent);
+  }
+}
+
+/* ─── Klickbares CVE-Badge ───────────────────────────────────────────────── */
+.badge-clickable {
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s;
+  position: relative;
+}
+.badge-clickable::after {
+  content: 'i';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-left: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--surface);
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-size: 10px;
+  font-weight: 700;
+  vertical-align: middle;
+  transform: translateY(-1px);
+}
+.badge-clickable:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 3px var(--accent-glow), 0 4px 12px var(--accent-glow-strong);
+}
+
+/* ─── CVE-Info-Modal ────────────────────────────────────────────────────── */
+.cve-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: cve-fade-in 0.18s ease-out;
+}
+.cve-modal-backdrop[hidden] { display: none; }
+[data-theme="light"] .cve-modal-backdrop {
+  background: rgba(30, 40, 60, 0.4);
+}
+@keyframes cve-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.cve-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  max-width: 540px;
+  width: 100%;
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 2rem 2.2rem 1.8rem;
+  position: relative;
+  box-shadow: var(--shadow);
+  animation: cve-pop-in 0.24s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+@keyframes cve-pop-in {
+  from { transform: scale(0.92); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.cve-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+.cve-modal-close:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.cve-modal-header {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.2rem;
+}
+.cve-severity {
+  display: inline-block;
+  background: var(--accent-dim);
+  color: var(--accent);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.6rem;
+}
+.cve-modal-header h2 {
+  font-size: 1.5rem;
+  margin: 0 0 0.3rem;
+  color: var(--text);
+}
+.cve-alias {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+.cve-alias em { color: var(--text); font-style: normal; font-weight: 600; }
+
+.cve-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.5rem 1.2rem;
+  margin-bottom: 1.3rem;
+}
+.cve-facts > div {
+  display: contents;
+}
+.cve-facts dt {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding-top: 2px;
+}
+.cve-facts dd {
+  font-size: 0.93rem;
+  color: var(--text);
+  margin: 0;
+}
+.cve-summary {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--text);
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.cve-summary code {
+  background: var(--code-bg);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+}
+.cve-summary em { color: var(--accent); font-style: normal; font-weight: 600; }
 .card h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
 .card p  { color: var(--text-muted); font-size: 0.93rem; margin-bottom: 1.2rem; }
 
@@ -359,15 +580,162 @@ a:hover { text-decoration: underline; }
 /* ─── Quiz (Teil 1) ─────────────────────────────────────────────────────────── */
 .quiz-form { display: flex; flex-direction: column; gap: 2rem; }
 
+/* ─── Question-Block mit vertikalem Flip ───────────────────────────────── */
 .question-block {
+  position: relative;
+  perspective: 1400px;
+  transition: border-color 0.2s;
+}
+.question-block.correct   .q-face-front { border-color: var(--success); }
+.question-block.incorrect .q-face-front { border-color: var(--error); }
+
+.q-face {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.6rem 1.8rem;
-  transition: border-color 0.2s;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition:
+    transform 0.7s cubic-bezier(0.4, 0.05, 0.2, 1),
+    border-color 0.2s;
+  transform-style: preserve-3d;
+  transform-origin: center center;
 }
-.question-block.correct   { border-color: var(--success); }
-.question-block.incorrect { border-color: var(--error); }
+.q-face-front {
+  position: relative;
+  z-index: 2;
+  transform: rotateX(0deg);
+}
+.q-face-back {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  transform: rotateX(-180deg);
+  display: flex;
+  flex-direction: column;
+  border-color: var(--accent);
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+  box-shadow: 0 0 0 1px var(--accent-glow), 0 12px 32px rgba(0,0,0,0.28);
+}
+.question-block.flipped .q-face-front { transform: rotateX(180deg); }
+.question-block.flipped .q-face-back  { transform: rotateX(0deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .q-face { transition: none; }
+}
+
+/* Hint-Header (Vorderseite) */
+.question-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.55rem;
+}
+.question-header .question-number { margin-bottom: 0; }
+
+.hint-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px 5px 8px;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--accent);
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: all 0.18s;
+}
+.hint-btn:hover {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  transform: translateY(-1px);
+}
+.hint-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--surface);
+  font-weight: 800;
+  font-size: 0.75rem;
+  font-family: Georgia, serif;
+  transition: all 0.18s;
+}
+.hint-btn:hover .hint-icon {
+  background: var(--accent);
+  color: var(--surface);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+/* Hint-Face (Rückseite) */
+.hint-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+.hint-badge {
+  display: inline-block;
+  background: var(--accent-dim);
+  color: var(--accent);
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.hint-close {
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.15s;
+  padding: 0;
+}
+.hint-close:hover {
+  background: var(--surface2);
+  color: var(--text);
+  border-color: var(--accent);
+}
+.hint-body {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text);
+  flex: 1;
+  display: block;
+}
+.hint-body em {
+  color: var(--accent);
+  font-style: normal;
+  font-weight: 600;
+}
+.hint-body code {
+  background: var(--code-bg);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+}
 
 .question-number {
   font-size: 0.75rem;
@@ -425,12 +793,28 @@ a:hover { text-decoration: underline; }
 
 /* Feedback-Farben nach Korrektur */
 .option-label.was-correct {
-  background: rgba(52,201,122,0.1);
+  background: rgba(52,201,122,0.12);
   border-color: var(--success);
 }
+.option-label.was-correct .radio-dot {
+  border-color: var(--success);
+  background: var(--success);
+  box-shadow: inset 0 0 0 3px var(--surface);
+}
 .option-label.was-wrong {
-  background: rgba(240,92,110,0.1);
+  background: rgba(240,92,110,0.12);
   border-color: var(--error);
+}
+/* höhere Spezifität: input:checked-Regel überschreiben */
+.option-label.was-wrong input:checked + .radio-dot {
+  border-color: var(--error);
+  background: var(--error);
+  box-shadow: inset 0 0 0 3px var(--surface);
+}
+.option-label.was-correct input:checked + .radio-dot {
+  border-color: var(--success);
+  background: var(--success);
+  box-shadow: inset 0 0 0 3px var(--surface);
 }
 
 /* ─── Score-Anzeige ─────────────────────────────────────────────────────────── */

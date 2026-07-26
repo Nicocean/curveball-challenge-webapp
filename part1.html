@@ -29,73 +29,169 @@
 
     <!-- Frage 1 -->
     <div class="question-block" id="q1">
-      <div class="question-number">Frage 1 von 6</div>
-      <div class="question-text">Woran erkennt Windows, dass ein Wurzelzertifikat vertrauenswürdig ist?</div>
-      <div class="options">
-        <label class="option-label"><input type="radio" name="q1" value="a"><span class="radio-dot"></span>Es rechnet die Selbstsignatur nach.</label>
-        <label class="option-label"><input type="radio" name="q1" value="b"><span class="radio-dot"></span>Es vergleicht das Zertifikat mit einem Eintrag im eigenen Speicher.</label>
-        <label class="option-label"><input type="radio" name="q1" value="c"><span class="radio-dot"></span>Es fragt bei der Zertifizierungsstelle nach.</label>
-        <label class="option-label"><input type="radio" name="q1" value="d"><span class="radio-dot"></span>Es prüft, ob der Gültigkeitszeitraum noch läuft.</label>
+      <div class="q-face q-face-front">
+        <div class="question-header">
+          <div class="question-number">Frage 1 von 6</div>
+          <button type="button" class="hint-btn" onclick="flipHint('q1')" aria-label="Hinweis zeigen">
+            <span class="hint-icon">?</span> Hinweis
+          </button>
+        </div>
+        <div class="question-text">Woran erkennt Windows, dass ein Wurzelzertifikat vertrauenswürdig ist?</div>
+        <div class="options">
+          <label class="option-label"><input type="radio" name="q1" value="a"><span class="radio-dot"></span>Es rechnet die Selbstsignatur nach.</label>
+          <label class="option-label"><input type="radio" name="q1" value="b"><span class="radio-dot"></span>Es vergleicht das Zertifikat mit einem Eintrag im eigenen Speicher.</label>
+          <label class="option-label"><input type="radio" name="q1" value="c"><span class="radio-dot"></span>Es fragt bei der Zertifizierungsstelle nach.</label>
+          <label class="option-label"><input type="radio" name="q1" value="d"><span class="radio-dot"></span>Es prüft, ob der Gültigkeitszeitraum noch läuft.</label>
+        </div>
+      </div>
+      <div class="q-face q-face-back">
+        <div class="hint-header">
+          <span class="hint-badge">Hinweis • Frage 1</span>
+          <button type="button" class="hint-close" onclick="flipHint('q1')" aria-label="Hinweis schließen">×</button>
+        </div>
+        <div class="hint-body">
+          Ein Wurzelzertifikat ist selbstsigniert — seine Signatur könnte also jeder erzeugen. Windows muss es daher <em>vorher</em> als vertrauenswürdig kennen und speichert die zulässigen Root-CAs lokal. Beim Verbindungsaufbau wird das gelieferte Root-Zertifikat schlicht mit diesem Speicher abgeglichen.
+        </div>
       </div>
     </div>
 
     <!-- Frage 2 -->
     <div class="question-block" id="q2">
-      <div class="question-number">Frage 2 von 6</div>
-      <div class="question-text">Welchen Kurvenparameter verändert der Angriff?</div>
-      <div class="options">
-        <label class="option-label"><input type="radio" name="q2" value="a"><span class="radio-dot"></span>Den Primzahlmodul <em>p</em>.</label>
-        <label class="option-label"><input type="radio" name="q2" value="b"><span class="radio-dot"></span>Die Ordnung <em>n</em>.</label>
-        <label class="option-label"><input type="radio" name="q2" value="c"><span class="radio-dot"></span>Den Basispunkt <em>G</em>.</label>
-        <label class="option-label"><input type="radio" name="q2" value="d"><span class="radio-dot"></span>Die Koeffizienten <em>a</em> und <em>b</em>.</label>
+      <div class="q-face q-face-front">
+        <div class="question-header">
+          <div class="question-number">Frage 2 von 6</div>
+          <button type="button" class="hint-btn" onclick="flipHint('q2')" aria-label="Hinweis zeigen">
+            <span class="hint-icon">?</span> Hinweis
+          </button>
+        </div>
+        <div class="question-text">Welchen Kurvenparameter verändert der Angriff?</div>
+        <div class="options">
+          <label class="option-label"><input type="radio" name="q2" value="a"><span class="radio-dot"></span>Den Primzahlmodul <em>p</em>.</label>
+          <label class="option-label"><input type="radio" name="q2" value="b"><span class="radio-dot"></span>Die Ordnung <em>n</em>.</label>
+          <label class="option-label"><input type="radio" name="q2" value="c"><span class="radio-dot"></span>Den Basispunkt <em>G</em>.</label>
+          <label class="option-label"><input type="radio" name="q2" value="d"><span class="radio-dot"></span>Die Koeffizienten <em>a</em> und <em>b</em>.</label>
+        </div>
+      </div>
+      <div class="q-face q-face-back">
+        <div class="hint-header">
+          <span class="hint-badge">Hinweis • Frage 2</span>
+          <button type="button" class="hint-close" onclick="flipHint('q2')" aria-label="Hinweis schließen">×</button>
+        </div>
+        <div class="hint-body">
+          Bei ECDSA gilt: privater Schlüssel <em>d</em>, öffentlicher Punkt <em>Q = d · G</em>. Wer <em>d</em> nicht kennt, kann trotzdem einen freien Parameter der Kurvengleichung austauschen — einen, der die Beziehung <em>Q = d′ · X</em> mit selbstgewähltem <em>d′</em> und passendem <em>X</em> ermöglicht. Modul, Ordnung und Koeffizienten definieren die Kurve selbst; nur <em>ein</em> Parameter dient als frei wählbarer Startpunkt.
+        </div>
       </div>
     </div>
 
     <!-- Frage 3 -->
     <div class="question-block" id="q3">
-      <div class="question-number">Frage 3 von 6</div>
-      <div class="question-text">Kennt der Angreifer danach den privaten Schlüssel der echten CA?</div>
-      <div class="options">
-        <label class="option-label"><input type="radio" name="q3" value="a"><span class="radio-dot"></span>Ja, er berechnet ihn aus dem öffentlichen Punkt.</label>
-        <label class="option-label"><input type="radio" name="q3" value="b"><span class="radio-dot"></span>Ja, er liest ihn aus dem Zertifikat.</label>
-        <label class="option-label"><input type="radio" name="q3" value="c"><span class="radio-dot"></span>Nein, er baut einen zweiten Schlüssel zum selben öffentlichen Punkt.</label>
-        <label class="option-label"><input type="radio" name="q3" value="d"><span class="radio-dot"></span>Nein, er umgeht die Signaturprüfung ganz.</label>
+      <div class="q-face q-face-front">
+        <div class="question-header">
+          <div class="question-number">Frage 3 von 6</div>
+          <button type="button" class="hint-btn" onclick="flipHint('q3')" aria-label="Hinweis zeigen">
+            <span class="hint-icon">?</span> Hinweis
+          </button>
+        </div>
+        <div class="question-text">Kennt der Angreifer danach den privaten Schlüssel der echten CA?</div>
+        <div class="options">
+          <label class="option-label"><input type="radio" name="q3" value="a"><span class="radio-dot"></span>Ja, er berechnet ihn aus dem öffentlichen Punkt.</label>
+          <label class="option-label"><input type="radio" name="q3" value="b"><span class="radio-dot"></span>Ja, er liest ihn aus dem Zertifikat.</label>
+          <label class="option-label"><input type="radio" name="q3" value="c"><span class="radio-dot"></span>Nein, er baut einen zweiten Schlüssel zum selben öffentlichen Punkt.</label>
+          <label class="option-label"><input type="radio" name="q3" value="d"><span class="radio-dot"></span>Nein, er umgeht die Signaturprüfung ganz.</label>
+        </div>
+      </div>
+      <div class="q-face q-face-back">
+        <div class="hint-header">
+          <span class="hint-badge">Hinweis • Frage 3</span>
+          <button type="button" class="hint-close" onclick="flipHint('q3')" aria-label="Hinweis schließen">×</button>
+        </div>
+        <div class="hint-body">
+          Aus <em>Q</em> das <em>d</em> zu rechnen wäre das diskrete Logarithmusproblem — praktisch unlösbar. Der Angreifer geht deshalb anders vor: Er wählt sich selbst ein <em>d′</em>, baut einen dazu passenden <em>Ersatz-Generator</em> und bringt Windows dazu, mit <em>diesem</em> Generator zu rechnen. Die Signatur wird echt — aber für eine <em>andere</em> Kurve. Der ursprüngliche private Schlüssel bleibt unbekannt.
+        </div>
       </div>
     </div>
 
     <!-- Frage 4 -->
     <div class="question-block" id="q4">
-      <div class="question-number">Frage 4 von 6</div>
-      <div class="question-text">Warum nimmt ein ungepatchtes Windows die gefälschte Signatur an?</div>
-      <div class="options">
-        <label class="option-label"><input type="radio" name="q4" value="a"><span class="radio-dot"></span>Weil die Signatur gar nicht geprüft wird.</label>
-        <label class="option-label"><input type="radio" name="q4" value="b"><span class="radio-dot"></span>Weil der Verifier den Generator aus dem Zertifikat übernimmt.</label>
-        <label class="option-label"><input type="radio" name="q4" value="c"><span class="radio-dot"></span>Weil SHA-256 als gebrochen gilt.</label>
-        <label class="option-label"><input type="radio" name="q4" value="d"><span class="radio-dot"></span>Weil die Seriennummer doppelt vorkommt.</label>
+      <div class="q-face q-face-front">
+        <div class="question-header">
+          <div class="question-number">Frage 4 von 6</div>
+          <button type="button" class="hint-btn" onclick="flipHint('q4')" aria-label="Hinweis zeigen">
+            <span class="hint-icon">?</span> Hinweis
+          </button>
+        </div>
+        <div class="question-text">Warum nimmt ein ungepatchtes Windows die gefälschte Signatur an?</div>
+        <div class="options">
+          <label class="option-label"><input type="radio" name="q4" value="a"><span class="radio-dot"></span>Weil die Signatur gar nicht geprüft wird.</label>
+          <label class="option-label"><input type="radio" name="q4" value="b"><span class="radio-dot"></span>Weil der Verifier den Generator aus dem Zertifikat übernimmt.</label>
+          <label class="option-label"><input type="radio" name="q4" value="c"><span class="radio-dot"></span>Weil SHA-256 als gebrochen gilt.</label>
+          <label class="option-label"><input type="radio" name="q4" value="d"><span class="radio-dot"></span>Weil die Seriennummer doppelt vorkommt.</label>
+        </div>
+      </div>
+      <div class="q-face q-face-back">
+        <div class="hint-header">
+          <span class="hint-badge">Hinweis • Frage 4</span>
+          <button type="button" class="hint-close" onclick="flipHint('q4')" aria-label="Hinweis schließen">×</button>
+        </div>
+        <div class="hint-body">
+          Die Kernfrage: Woher nimmt <code>crypt32.dll</code> die Kurvenparameter beim Verifizieren? Aus einer festen Tabelle namensbezogener Kurven — oder aus dem Zertifikat, das ja diese Parameter mitliefern <em>kann</em>? Der eigentliche Bug liegt in genau dieser Wahl.
+        </div>
       </div>
     </div>
 
     <!-- Frage 5 -->
     <div class="question-block" id="q5">
-      <div class="question-number">Frage 5 von 6</div>
-      <div class="question-text">Was bedeutet es, wenn ein Zertifikat <em>explizite Parameter</em> trägt?</div>
-      <div class="options">
-        <label class="option-label"><input type="radio" name="q5" value="a"><span class="radio-dot"></span>Es nennt die Kurve über einen Object Identifier.</label>
-        <label class="option-label"><input type="radio" name="q5" value="b"><span class="radio-dot"></span>Es schreibt alle Kurvenparameter vollständig aus.</label>
-        <label class="option-label"><input type="radio" name="q5" value="c"><span class="radio-dot"></span>Es enthält zusätzlich den privaten Schlüssel.</label>
-        <label class="option-label"><input type="radio" name="q5" value="d"><span class="radio-dot"></span>Es verzichtet auf eine Signatur.</label>
+      <div class="q-face q-face-front">
+        <div class="question-header">
+          <div class="question-number">Frage 5 von 6</div>
+          <button type="button" class="hint-btn" onclick="flipHint('q5')" aria-label="Hinweis zeigen">
+            <span class="hint-icon">?</span> Hinweis
+          </button>
+        </div>
+        <div class="question-text">Was bedeutet es, wenn ein Zertifikat <em>explizite Parameter</em> trägt?</div>
+        <div class="options">
+          <label class="option-label"><input type="radio" name="q5" value="a"><span class="radio-dot"></span>Es nennt die Kurve über einen Object Identifier.</label>
+          <label class="option-label"><input type="radio" name="q5" value="b"><span class="radio-dot"></span>Es schreibt alle Kurvenparameter vollständig aus.</label>
+          <label class="option-label"><input type="radio" name="q5" value="c"><span class="radio-dot"></span>Es enthält zusätzlich den privaten Schlüssel.</label>
+          <label class="option-label"><input type="radio" name="q5" value="d"><span class="radio-dot"></span>Es verzichtet auf eine Signatur.</label>
+        </div>
+      </div>
+      <div class="q-face q-face-back">
+        <div class="hint-header">
+          <span class="hint-badge">Hinweis • Frage 5</span>
+          <button type="button" class="hint-close" onclick="flipHint('q5')" aria-label="Hinweis schließen">×</button>
+        </div>
+        <div class="hint-body">
+          ECC-Zertifikate erlauben zwei Codierungen: einmal <em>benannt</em> (nur ein Verweis wie <code>secp384r1</code> — die Parameter kennt das System aus Tabellen) und einmal <em>explizit</em> (alle Werte — <em>p</em>, <em>a</em>, <em>b</em>, <em>G</em>, <em>n</em>, <em>h</em> — stehen direkt im Zertifikat drin). Genau diese zweite Variante ist die Angriffsfläche.
+        </div>
       </div>
     </div>
 
     <!-- Frage 6 -->
     <div class="question-block" id="q6">
-      <div class="question-number">Frage 6 von 6</div>
-      <div class="question-text">Warum war Firefox nie betroffen?</div>
-      <div class="options">
-        <label class="option-label"><input type="radio" name="q6" value="a"><span class="radio-dot"></span>Firefox nutzt ausschließlich RSA.</label>
-        <label class="option-label"><input type="radio" name="q6" value="b"><span class="radio-dot"></span>Firefox prüft Zertifikate über die Windows CryptoAPI.</label>
-        <label class="option-label"><input type="radio" name="q6" value="c"><span class="radio-dot"></span>Die Network Security Services unterstützen keine expliziten EC-Parameter.</label>
-        <label class="option-label"><input type="radio" name="q6" value="d"><span class="radio-dot"></span>Firefox akzeptiert nur Zertifikate mit Extended Validation.</label>
+      <div class="q-face q-face-front">
+        <div class="question-header">
+          <div class="question-number">Frage 6 von 6</div>
+          <button type="button" class="hint-btn" onclick="flipHint('q6')" aria-label="Hinweis zeigen">
+            <span class="hint-icon">?</span> Hinweis
+          </button>
+        </div>
+        <div class="question-text">Warum war Firefox nie betroffen?</div>
+        <div class="options">
+          <label class="option-label"><input type="radio" name="q6" value="a"><span class="radio-dot"></span>Firefox nutzt ausschließlich RSA.</label>
+          <label class="option-label"><input type="radio" name="q6" value="b"><span class="radio-dot"></span>Firefox prüft Zertifikate über die Windows CryptoAPI.</label>
+          <label class="option-label"><input type="radio" name="q6" value="c"><span class="radio-dot"></span>Die Network Security Services unterstützen keine expliziten EC-Parameter.</label>
+          <label class="option-label"><input type="radio" name="q6" value="d"><span class="radio-dot"></span>Firefox akzeptiert nur Zertifikate mit Extended Validation.</label>
+        </div>
+      </div>
+      <div class="q-face q-face-back">
+        <div class="hint-header">
+          <span class="hint-badge">Hinweis • Frage 6</span>
+          <button type="button" class="hint-close" onclick="flipHint('q6')" aria-label="Hinweis schließen">×</button>
+        </div>
+        <div class="hint-body">
+          Chrome und IE nutzen unter Windows die System-Zertifikatsprüfung. Firefox hingegen bringt seine eigene Krypto-Bibliothek von Mozilla mit — die entscheidet unabhängig, welche Zertifikat-Codierungen überhaupt akzeptiert werden. Und diese Bibliothek ist bei einer der beiden Codierungsvarianten aus Frage 5 einfach kompromisslos.
+        </div>
       </div>
     </div>
 
@@ -119,6 +215,12 @@
 <script src="/static/file-guard.js"></script>
 <script src="/static/theme.js"></script>
 <script src="/static/theorie.js"></script>
+<script>
+  function flipHint(qid) {
+    const block = document.getElementById(qid);
+    if (block) block.classList.toggle('flipped');
+  }
+</script>
 <script src="/static/quiz.js"></script>
 </body>
 </html>
