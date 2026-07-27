@@ -9,35 +9,48 @@
 
   <h3>1 · Das Prinzip in einem Satz</h3>
   <p>
-    Windows entscheidet vor dem Patch, ob es einem CA-Zertifikat vertraut, indem es <em>öffentlichen Punkt Q
-    und Seriennummer</em> mit einem Eintrag im eigenen Cache abgleicht — <strong>die zugehörigen Kurvenparameter
-    prüft es jedoch nicht</strong>. Damit lässt sich eine CA fälschen, ohne ihren privaten Schlüssel zu kennen.
+    Windows entscheidet vor dem Patch, ob es einem CA-Zertifikat vertraut, indem es <em>Subject/Subject
+    Key Identifier</em> und den <em>öffentlichen Punkt Q</em> mit einem Eintrag im eigenen Root-Store
+    abgleicht. Bei benannten Kurven ist die Kurve durch die OID eindeutig festgelegt — bei
+    <em>expliziten</em> Parametern <strong>vergleicht die ungepatchte CryptoAPI den mitgelieferten
+    Generator jedoch nicht gegen die Standard-Kurve</strong>. Damit lässt sich eine CA fälschen, ohne
+    ihren privaten Schlüssel zu kennen.
   </p>
 
   <h3>2 · Mathematische Grundlage</h3>
   <p>
-    Bei ECDSA ist der private Schlüssel <code>k</code> eine ganze Zahl und der öffentliche Punkt
-    <code>Q&nbsp;=&nbsp;k&nbsp;·&nbsp;G</code>, wobei <code>G</code> der Standard-Generator der Kurve ist.
-    Der Angriff dreht die Beziehung um: statt aus <code>k</code> und <code>G</code> den Punkt <code>Q</code>
-    zu berechnen, sucht sich der Angreifer <em>selbst</em> ein <code>k</code> und leitet daraus einen passenden
-    Generator <code>G'</code> ab:
+    Bei ECDSA ist der private Schlüssel klassisch mit <code>d</code> bezeichnet — eine ganze Zahl,
+    aus der der öffentliche Punkt <code>Q&nbsp;=&nbsp;d&nbsp;·&nbsp;G</code> berechnet wird, wobei
+    <code>G</code> der Standard-Generator der Kurve ist. Der PoC-Code <code>badecparams.py</code>
+    verwendet dafür die Variable <code>k</code>; gemeint ist derselbe private Skalar.
+  </p>
+  <p>
+    Der Angriff dreht die Beziehung um: statt aus einem geheimen <code>d</code> und dem festen
+    <code>G</code> einen öffentlichen Punkt <code>Q</code> zu erzeugen, wählt der Angreifer
+    <em>selbst</em> ein <code>k</code> und leitet daraus einen passenden neuen Generator
+    <code>G'</code> ab:
   </p>
   <div class="formula-box">
     G' = k⁻¹ · Q &nbsp;&nbsp;&#8658;&nbsp;&nbsp; k · G' = k · k⁻¹ · Q = Q
   </div>
   <p style="margin-top:0.6rem;">
-    Ergebnis: Der Angreifer besitzt ein gültiges <code>(k, G')</code>-Paar zum <em>echten</em> öffentlichen
-    Punkt <code>Q</code> der Ziel-CA — <strong>ohne deren privaten Schlüssel</strong>. Er kann jetzt Zertifikate
-    ausstellen, die eine Signatur tragen, welche mathematisch zu <code>Q</code> passt.
+    Ergebnis: Der Angreifer besitzt ein gültiges <code>(k,&nbsp;G')</code>-Paar zum <em>echten</em>
+    öffentlichen Punkt <code>Q</code> der Ziel-CA — <strong>ohne</strong> deren privaten Schlüssel
+    <code>d</code>. Er kann jetzt Zertifikate ausstellen, deren ECDSA-Signatur mathematisch zu
+    <code>Q</code> passt.
   </p>
 
   <h3>3 · Warum funktioniert das gegen Windows?</h3>
   <p>
     Der Trick liegt im Zertifikatsformat X.509: Die verwendete Kurve darf entweder über eine kurze OID
     (z.&nbsp;B. <code>prime256v1</code>) <em>oder</em> als vollständig ausgeschriebene <strong>explizite
-    Parameter</strong> angegeben werden — inklusive des Generators. Ungepatchte CryptoAPI-Versionen
-    übernehmen den Generator aus dem Zertifikat, statt ihn gegen den Standard zu prüfen. Da <code>Q</code>
-    und Seriennummer der echten CA identisch sind, wird die Kette akzeptiert.
+    Parameter</strong> angegeben werden — inklusive des Generators <code>G</code>. Der Root-Store-Cache
+    von <code>Crypt32.dll</code> matcht ein neu vorgelegtes CA-Zertifikat über Subject / Subject Key
+    Identifier und den öffentlichen Punkt <code>Q</code>. Bei benannten Kurven ist das ausreichend, weil
+    die OID die Kurve komplett festlegt. Bei expliziten Parametern übernimmt die ungepatchte
+    CryptoAPI den Generator <em>ungeprüft aus dem Zertifikat</em> — der Cache-Eintrag der echten
+    CA wird nicht mit den vorgelegten Werten verglichen. Da <code>Q</code> übereinstimmt, gilt das
+    gefälschte Zertifikat als vertrauenswürdig und die gesamte Kette wird akzeptiert.
   </p>
 
   <h3>4 · Auswirkungen</h3>
@@ -49,15 +62,19 @@
 
   <h3>5 · Warum war Firefox nicht betroffen?</h3>
   <p>
-    Firefox nutzt <strong>Network Security Services</strong> (NSS) statt der Windows CryptoAPI. NSS akzeptiert
-    <em>keine</em> Zertifikate mit expliziten EC-Parametern — der Angriffsvektor existiert dort schlicht nicht.
+    Firefox bringt auf allen Plattformen seine eigene Krypto-Bibliothek mit — <strong>Network
+    Security Services</strong> (NSS) — und ruft nie die Windows-CryptoAPI für die Kettenprüfung
+    auf. NSS akzeptiert <em>keine</em> ECC-Zertifikate mit expliziten Parametern, sondern nur
+    benannte Kurven. Der Angriffsvektor existiert dort schlicht nicht.
   </p>
 
   <h3>6 · Der Patch</h3>
   <p>
-    Am selben Tag der Offenlegung (14. Januar 2020) veröffentlichte Microsoft ein Update, das
-    <code>Crypt32.dll</code> so anpasst, dass beim Cache-Abgleich <em>alle</em> Kurvenparameter — insbesondere
-    der Generator — geprüft werden müssen. Bekannte Ausnutzungen in freier Wildbahn: keine.
+    Am selben Tag der Offenlegung (14. Januar 2020) veröffentlichte Microsoft das Update
+    <strong>KB4534273</strong> als Teil des Januar-Patchdays. Es passt <code>Crypt32.dll</code>
+    so an, dass beim Cache-Abgleich <em>alle</em> Kurvenparameter — insbesondere der Generator
+    <code>G</code> — gegen die im Root-Store hinterlegten Standardwerte geprüft werden müssen.
+    Bekannte Ausnutzungen in freier Wildbahn: keine.
   </p>
 
   <div class="theorie-footer">

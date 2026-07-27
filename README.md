@@ -6,23 +6,26 @@ Dieses Projekt bietet eine interaktive Lernumgebung zur CVE-2020-0601 (Curveball
 
 ```text
 curveball-challenge/
-├── server.py              # Python http.server, serviert /static, routing
-├── static/
-│   ├── index.html         # Landing: wähle Teil 1 oder Teil 2
-│   ├── part1.html         # Einführungs-Quiz
-│   ├── part2.html         # Durchführungs-Anleitung
-│   └── style.css
-├── downloads/             # die 3 herunterladbaren Skripte
-│   ├── curveball_demo.py  # Schritt 3 - Demo-Skript
-│   ├── badecparams.py     # Schritt 4 - Attack-Skript (aus dem Branch)
-│   └── httpd.py           # Schritt 8 - Server-Skript
+├── downloads/             # Herunterladbare Python-Skripte für die Challenge
+│   ├── badecparams.py     
+│   ├── curveball_demo.py  
+│   └── httpd.py           
+├── static/                # Statische Assets, Theorie und JavaScript-Logik
+│   ├── style.css          
+│   ├── theorie.html       
+│   └── *.js               
+├── index.html             # Landing-Page aka. Main-Menu
+├── part1.html             # Teil 1: Einführung
+├── part2.html             # Teil 2: Durchführung
+├── server.py              # Python Webserver (Einstiegspunkt)
 └── README.md
 ```
 
 ## Projektstruktur im Detail
 
-- **server.py**: Der zentrale Einstiegspunkt. Startet einen lokalen Webserver, der die statischen Dateien ausliefert und das Routing übernimmt.
-- **static/**: Enthält das Frontend der Webanwendung inklusive HTML-Seiten für das Quiz und die Anleitung sowie CSS für das Styling.
+- **server.py**: Der zentrale Einstiegspunkt. Startet einen lokalen Webserver, der die Dateien ausliefert.
+- **index.html / part1.html / part2.html**: Die Haupt-HTML-Seiten der Webanwendung.
+- **static/**: Enthält CSS-Styling, JavaScript-Logik für Quiz und Interaktionen sowie die Theorie-Seite.
 - **downloads/**: Beinhaltet die Python-Skripte, die im Rahmen der Challenge heruntergeladen und lokal ausgeführt werden müssen.
 
 ## Ausführung
