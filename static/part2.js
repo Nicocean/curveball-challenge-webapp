@@ -8,6 +8,7 @@ const state = {
   attempts: {},       // { 1: 0, 2: 0, ... }
   cleanSolves: 0,     // Schritte ohne Fehlversuch UND ohne "Lösung zeigen"
   revealed: {},       // { 1: true, ... } — Lösung wurde offengelegt
+  verified: {},       // { 1: true, ... } — Prüfung erfolgreich, Button steht auf "Weiter →"
   optionalDone: false // Bonus-Aufgabe (Nachrechnen) korrekt gelöst?
 };
 
@@ -91,7 +92,18 @@ function toggleHint(step) {
 }
 
 /* ─── Validation Dispatch ──────────────────────────────────────────────── */
+/*
+   Zwei-Phasen-Button:
+     1. Klick: "Prüfen"  → validiert. Bei korrekt: Button wird grün + Label "Weiter →".
+     2. Klick: "Weiter" → advanceFrom(step) zum nächsten Schritt.
+*/
 function validateAndNext(step) {
+  // Phase 2: bereits geprüft & richtig → jetzt weiter
+  if (state.verified[step]) {
+    advanceFrom(step);
+    return;
+  }
+
   const sol = SOLUTIONS[step];
   let ok = false;
 
@@ -105,16 +117,27 @@ function validateAndNext(step) {
   const solveBtn = document.getElementById('solve-' + step);
 
   if (ok) {
-    if (fb) { fb.textContent = '✓ Richtig!'; fb.className = 'task-feedback ok'; }
+    if (fb) { fb.textContent = '✓ Richtig! Klicke „Weiter →" für den nächsten Schritt.'; fb.className = 'task-feedback ok'; }
     if (state.attempts[step] === 0 && !state.revealed[step]) state.cleanSolves++;
     lockStep(step);
-    setTimeout(() => advanceFrom(step), 450);
+    markVerified(step);
   } else {
     state.attempts[step]++;
     if (fb) { fb.textContent = '✗ Nicht ganz — probiere es nochmal.'; fb.className = 'task-feedback err'; }
     if (att) att.textContent = `${state.attempts[step]} Fehlversuch${state.attempts[step] === 1 ? '' : 'e'}`;
     if (state.attempts[step] >= 3 && solveBtn) solveBtn.hidden = false;
   }
+}
+
+function markVerified(step) {
+  state.verified[step] = true;
+  const btn = document.getElementById('next-' + step);
+  if (!btn) return;
+  btn.classList.add('btn-verified');
+  btn.disabled = false;
+  // Letzter Schritt behält "Abschließen →", alle anderen werden zu "Weiter →"
+  if (step < TOTAL_STEPS) btn.innerHTML = 'Weiter →';
+  else btn.innerHTML = 'Abschließen →';
 }
 
 /* ─── Validators ───────────────────────────────────────────────────────── */
@@ -279,7 +302,7 @@ function revealSolution(step) {
   }
 
   const fb = document.getElementById('fb-' + step);
-  if (fb) { fb.textContent = 'Lösung angezeigt. Klicke auf „Prüfen & Weiter" um fortzufahren.'; fb.className = 'task-feedback warn'; }
+  if (fb) { fb.textContent = 'Lösung angezeigt. Klicke auf „Prüfen" um sie zu bestätigen.'; fb.className = 'task-feedback warn'; }
 }
 
 /* ─── Optional (Bonus-Aufgabe im Schritt 2) ────────────────────────────── */
@@ -310,11 +333,10 @@ function checkOptional() {
 function lockStep(step) {
   const card = document.querySelector(`.step-card[data-step="${step}"]`);
   if (!card) return;
-  // WICHTIG: nur Elemente in Nicht-Optional-Panels sperren, damit das Optional-Feld
-  // im Schritt 2 auch nach dem Weitergehen bedienbar bleibt (falls jemand zurück-scrollt).
+  // Nur die Antwort-Inputs/Selects sperren — der Weiter-Button bleibt klickbar.
+  // Auch die DnD-Items werden non-draggable, damit die richtige Reihenfolge steht.
   card.querySelectorAll('.task-panel:not(.task-panel-optional) input, .task-panel:not(.task-panel-optional) select').forEach(el => el.disabled = true);
-  const nextBtn = document.getElementById('next-' + step);
-  if (nextBtn) nextBtn.disabled = true;
+  card.querySelectorAll('.task-panel:not(.task-panel-optional) .dnd-item').forEach(el => el.setAttribute('draggable', 'false'));
   const solveBtn = document.getElementById('solve-' + step);
   if (solveBtn) solveBtn.hidden = true;
 }

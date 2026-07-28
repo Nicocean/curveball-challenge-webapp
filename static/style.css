@@ -2414,3 +2414,25 @@ pre code {
   background: rgba(79, 152, 163, 0.08);
   border-left-color: #4F98A3;
 }
+
+/* ─── Prüfen → Weiter Zwei-Phasen-Button ──────────────────────────────── */
+.btn.btn-primary.btn-verified {
+  background: linear-gradient(180deg, #2ea043 0%, #26893a 100%);
+  border-color: #26893a;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(46, 160, 67, 0.35);
+  animation: verifyPulse 0.35s ease-out;
+}
+.btn.btn-primary.btn-verified:hover {
+  background: linear-gradient(180deg, #34b64c 0%, #2a9640 100%);
+  box-shadow: 0 3px 12px rgba(46, 160, 67, 0.5);
+}
+.btn.btn-primary.btn-verified:focus-visible {
+  outline: 2px solid #2ea043;
+  outline-offset: 2px;
+}
+@keyframes verifyPulse {
+  0%   { transform: scale(1); }
+  55%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}

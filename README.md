@@ -5,11 +5,7 @@ Dieses Projekt bietet eine interaktive Lernumgebung zur CVE-2020-0601 (Curveball
 ## Technischer Aufbau
 
 ```text
-curveball-challenge/
-├── downloads/             # Herunterladbare Python-Skripte für die Challenge
-│   ├── badecparams.py     
-│   ├── curveball_demo.py  
-│   └── httpd.py           
+curveball-challenge/        
 ├── static/                # Statische Assets, Theorie und JavaScript-Logik
 │   ├── style.css          
 │   ├── theorie.html       
