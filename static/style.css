@@ -1097,13 +1097,32 @@ a:hover { text-decoration: underline; }
   inset: 0 auto 0 0;
   width: var(--fill, 0%);
   border-radius: 2px;
-  background: linear-gradient(90deg,
+  background-color: var(--accent);
+  background-image: linear-gradient(
+    100deg,
     var(--accent) 0%,
+    var(--accent) 42%,
     var(--accent-hi) 50%,
-    var(--success) 100%);
-  background-size: 200% 100%;
-  transition: width 0.5s cubic-bezier(.4,0,.2,1);
-  box-shadow: 0 0 6px var(--accent-glow-strong);
+    var(--accent) 58%,
+    var(--accent) 100%
+  );
+  background-size: 220% 100%;
+  background-position: 0% 0;
+  background-repeat: no-repeat;
+  transition: width 0.5s cubic-bezier(.4,0,.2,1), background-color 0.4s ease;
+  animation: stepper-wave 3.6s linear infinite;
+}
+
+@keyframes stepper-wave {
+  0%   { background-position: 0% 0; }
+  100% { background-position: 100% 0; }
+}
+
+/* Alles durch: Balken wird flach grün wie die Schritt-Zahlen, ohne Effekt */
+.stepper-fill.complete {
+  background-image: none;
+  background-color: var(--success);
+  animation: none;
 }
 
 .stepper-nodes {
@@ -1576,7 +1595,8 @@ a:hover { text-decoration: underline; }
 /* ─── Reduced Motion ───────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .step-card { animation: none; }
-  .stepper-fill { transition: none; }
+  .stepper-fill { transition: none; animation: none; background-image: none; background-color: var(--accent); }
+  .stepper-fill.complete { background-color: var(--success); }
   .stepper-node.active .stepper-num { transform: none; }
 }
 

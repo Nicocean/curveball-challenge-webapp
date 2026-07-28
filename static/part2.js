@@ -60,7 +60,10 @@ function renderStepper() {
   const nodes = document.querySelectorAll('.stepper-node');
   const done = state.current - 1;
   const pct = (done / (TOTAL_STEPS - 1)) * 100;
-  if (fill) fill.style.setProperty('--fill', pct + '%');
+  if (fill) {
+    fill.style.setProperty('--fill', pct + '%');
+    fill.classList.remove('complete');
+  }
 
   nodes.forEach(n => {
     const s = parseInt(n.dataset.step, 10);
@@ -362,7 +365,10 @@ function showFinale() {
     n.classList.add('done');
   });
   const fill = document.getElementById('stepperFill');
-  if (fill) fill.style.setProperty('--fill', '100%');
+  if (fill) {
+    fill.style.setProperty('--fill', '100%');
+    fill.classList.add('complete');
+  }
 
   // Scores einsetzen
   const totalAtt = Object.values(state.attempts).reduce((a, b) => a + b, 0);

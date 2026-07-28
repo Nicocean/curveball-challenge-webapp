@@ -475,26 +475,25 @@ localhost.key         # dazugehöriger Schlüssel</div>
         (unverändert). Beide werden später gemeinsam über die Leitung ausgeliefert.
       </p>
       <p class="step-note">
-        <strong>Vergleich mit Schritt 1:</strong> unten siehst du den Auszug aus dem gefälschten
-        Zwischenzertifikat. Achte darauf, was gegenüber Schritt 1 <em>gleich</em> und was
-        <em>anders</em> ist — die Antwort auf die Frage steckt genau in diesem Unterschied.
+        Führe den Command unten in deinem Terminal aus und vergleiche deinen Output
+        <strong>Zeile für Zeile</strong> mit dem Referenz-Auszug aus Schritt 1 darunter. Der
+        Unterschied ist die Antwort auf die Kontrollfrage.
       </p>
       <div class="practice-box">
         <div class="practice-line"><strong>Vorbedingung:</strong> Schritt 3 wurde ausgeführt, <code>intermediateCA.crt</code> existiert.</div>
-        <div class="practice-line"><strong>Was zu sehen sein wird:</strong> gleicher öffentlicher Punkt <code>pub</code>, gleiche Seriennummer, gleicher Subject — aber <strong>keine</strong> Zeile <code>ASN1 OID: prime256v1</code> mehr. Stattdessen ein ausgeschriebener Parameter-Block mit einem eigenen Generator.</div>
       </div>
       <div class="code-block">openssl x509 -in intermediateCA.crt -text -noout</div>
+
+      <p class="step-note" style="margin-top: 1rem;">
+        <strong>Referenz-Auszug aus Schritt 1</strong> (echtes CA-Zert, zum Vergleich mit deinem Terminal-Output):
+      </p>
       <div class="code-block code-block-output">Public Key Algorithm: id-ecPublicKey
-    Field Type: prime-field
-    Prime:  00:ff:ff:ff:ff:00:00:00:01:...   ← p, ausgeschrieben
-    A:      00:ff:ff:ff:ff:00:00:00:01:...   ← Koeffizient a
-    B:      5a:c6:35:d8:aa:3a:93:e7:...      ← Koeffizient b
-    Generator (uncompressed):
-        04: 4e:df:...                         ← G' statt G!
-    Order: ff:ff:ff:ff:00:00:00:00:...       ← n
-    Cofactor: 1                              ← h
+    ASN1 OID: prime256v1
+    NIST CURVE: P-256
     pub:
-        04:57:70:1a:3f:...                   ← Q identisch zu Schritt 1</div>
+        04:57:70:1a:3f:...          ← öffentlicher Punkt Q
+X509v3 Basic Constraints: critical
+    CA:TRUE                          ← darf weitere Zertifikate ausstellen</div>
 
       <div class="task-panel">
         <div class="task-label">Deine Aufgabe · Kontrollfrage</div>
@@ -530,9 +529,11 @@ localhost.key         # dazugehöriger Schlüssel</div>
       </header>
 
       <div class="step-hint" id="hint-5" hidden>
-        Die Präfixe verraten den Kontext: <code>1.3.6.1.4.1.311.*</code> ist ein reservierter
-        Microsoft-Zweig für Authenticode. <code>2.5.29.*</code> wären generische X.509-Erweiterungen,
-        <code>1.3.6.1.5.5.7.*</code> wären PKIX-Erweiterungen. Welcher Zweig gehört zu Authenticode?
+        Der Befehl gibt die eingebettete Zertifikatskette aus <code>authenticode.spc</code> aus.
+        Schau dir die <strong>oberste</strong> <code>subject=</code>-Zeile an: wessen Zertifikat ist das —
+        eine echte CA, oder etwas anderes? Und für wen wurde es ausgestellt? Der <code>issuer=</code>
+        direkt darunter zeigt, wer es unterschrieben hat — und dieser Issuer ist genau die
+        <strong>manipulierte Intermediate-CA</strong> aus Schritt 3.
       </div>
 
       <p>
@@ -541,23 +542,32 @@ localhost.key         # dazugehöriger Schlüssel</div>
         das Windows-Format für Code-Signing mit <code>signtool</code>. Auf einem ungepatchten System
         ließe sich damit eine ausführbare Datei signieren, die Windows als vertrauenswürdig einstuft.
       </p>
+      <p class="step-note">
+        Der Command unten listet alle Zertifikate, die in der SPC-Datei stecken. Führe ihn aus
+        und schau dir vor allem die <strong>erste subject/issuer-Zeile</strong> in deinem Terminal an.
+      </p>
       <div class="practice-box">
         <div class="practice-line"><strong>Vorbedingung:</strong> Schritt 3 wurde ausgeführt, <code>authenticode.spc</code> existiert.</div>
-        <div class="practice-line"><strong>Was zu sehen sein wird:</strong> zwei Microsoft-Kennungen aus dem Zweig <code>1.3.6.1.4.1.311</code>, die den Verwendungszweck „Code-Signing" markieren.</div>
       </div>
       <div class="code-block">openssl pkcs7 -inform DER -in authenticode.spc -print_certs -noout</div>
-      <p>Sichtbare Kennungen (Object Identifier) in der Ausgabe:</p>
-      <div class="code-block">1.3.6.1.4.1.311.2.1.21   # SPC_INDIVIDUAL_SP_KEY_PURPOSE_OBJID
-1.3.6.1.4.1.311.2.1.22   # SPC_COMMERCIAL_SP_KEY_PURPOSE_OBJID</div>
+      <p class="step-note" style="margin-top:1rem;">Beispielhafter Ausschnitt aus der Ausgabe (Werte gekürzt):</p>
+      <div class="code-block code-block-output">subject=... CN=BADECPARAMS CVE-2020-0601 Code Signing Authority ...
+issuer =... CN=COMODO ECC Extended Validation Secure Server CA
+
+subject=... CN=COMODO ECC Extended Validation Secure Server CA
+issuer =... CN=COMODO ECC Certification Authority
+
+subject=... CN=COMODO ECC Extended Validation Secure Server CA
+issuer =... CN=COMODO ECC Certification Authority</div>
 
       <div class="task-panel">
         <div class="task-label">Deine Aufgabe</div>
-        <div class="task-question">Woran erkennt man am Kennnummern-Präfix, dass es sich um Microsoft-Authenticode handelt?</div>
+        <div class="task-question">Wer hat das oberste Zertifikat der Kette (das Code-Signing-Zert) ausgestellt — und was folgt daraus für den Angriff?</div>
         <div class="options" data-task="s5">
-          <label class="option-label"><input type="radio" name="s5" value="a"><span class="radio-dot"></span>Am Präfix <code>1.3.6.1.4.1.311</code> (Microsoft Enterprise).</label>
-          <label class="option-label"><input type="radio" name="s5" value="b"><span class="radio-dot"></span>Am Präfix <code>2.5.29</code> (X.509-Standarderweiterungen).</label>
-          <label class="option-label"><input type="radio" name="s5" value="c"><span class="radio-dot"></span>An der Länge der Kennnummer (immer 7 Segmente).</label>
-          <label class="option-label"><input type="radio" name="s5" value="d"><span class="radio-dot"></span>Am Suffix <code>.21</code> / <code>.22</code>.</label>
+          <label class="option-label"><input type="radio" name="s5" value="a"><span class="radio-dot"></span>Die <em>manipulierte</em> Intermediate-CA aus Schritt 3 — damit hängt das Code-Signing-Zert an der gefälschten Kette.</label>
+          <label class="option-label"><input type="radio" name="s5" value="b"><span class="radio-dot"></span>Die echte COMODO Certification Authority — die Signatur ist ohne CurveBall bereits gültig.</label>
+          <label class="option-label"><input type="radio" name="s5" value="c"><span class="radio-dot"></span>Microsoft selbst — <code>signtool</code> setzt automatisch eine MS-Root ein.</label>
+          <label class="option-label"><input type="radio" name="s5" value="d"><span class="radio-dot"></span>Niemand — das oberste Zertifikat ist selbstsigniert.</label>
         </div>
         <div class="task-feedback" id="fb-5"></div>
       </div>
