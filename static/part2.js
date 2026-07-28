@@ -40,6 +40,7 @@ const OPTIONAL_ANSWERS = ['1'];
 document.addEventListener('DOMContentLoaded', () => {
   for (let i = 1; i <= TOTAL_STEPS; i++) state.attempts[i] = 0;
   // Setup-Card ist initial sichtbar, Steps sind komplett hidden bis startSteps().
+  initDnD();          // Drag-and-Drop für Schritt 3
   renderStepper();
 });
 
@@ -166,24 +167,75 @@ function validateText(step, correctArr) {
 
 function validateOrder(step, correct) {
   const card = document.querySelector(`.step-card[data-step="${step}"]`);
-  const rows = card.querySelectorAll('.order-row');
+  const list = card.querySelector('.dnd-list');
+  if (!list) return false;
+  const items = Array.from(list.querySelectorAll('.dnd-item'));
   let allOk = true;
-  const chosen = {};
-  rows.forEach(r => {
-    const key = r.dataset.key;
-    const val = r.querySelector('.order-select').value;
-    chosen[key] = val;
-    r.classList.remove('row-correct', 'row-wrong');
-  });
-  const seen = {};
-  Object.values(chosen).forEach(v => { if (v) seen[v] = (seen[v] || 0) + 1; });
-  rows.forEach(r => {
-    const key = r.dataset.key;
-    const val = chosen[key];
-    if (!val || seen[val] > 1 || val !== correct[key]) { r.classList.add('row-wrong'); allOk = false; }
-    else r.classList.add('row-correct');
+  items.forEach((it, idx) => {
+    const key = it.dataset.key;
+    const pos = String(idx + 1);
+    it.classList.remove('row-correct', 'row-wrong');
+    if (correct[key] === pos) it.classList.add('row-correct');
+    else { it.classList.add('row-wrong'); allOk = false; }
   });
   return allOk;
+}
+
+/* ─── Drag-and-Drop für Reihenfolge-Aufgaben ──────────────────── */
+function initDnD() {
+  document.querySelectorAll('.dnd-list').forEach(list => {
+    // Initial: mischen (Fisher-Yates), damit die Aufgabe nicht schon fertig ist
+    const items = Array.from(list.children);
+    for (let i = items.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      list.insertBefore(items[j], items[i]);
+      items[i] = items[j];
+    }
+    // Falls Zufall bereits die Loesung ergibt → einen Item-Swap
+    const keys = Array.from(list.children).map(el => el.dataset.key);
+    if (keys.join(',') === 'load,k,gprime,sign') {
+      list.insertBefore(list.children[3], list.children[0]);
+    }
+    updateDnDNumbers(list);
+
+    list.querySelectorAll('.dnd-item').forEach(item => {
+      item.addEventListener('dragstart', e => {
+        item.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', item.dataset.key);
+      });
+      item.addEventListener('dragend', () => {
+        item.classList.remove('dragging');
+        updateDnDNumbers(list);
+      });
+    });
+
+    list.addEventListener('dragover', e => {
+      e.preventDefault();
+      const dragging = list.querySelector('.dragging');
+      if (!dragging) return;
+      const after = getDragAfter(list, e.clientY);
+      if (after == null) list.appendChild(dragging);
+      else list.insertBefore(dragging, after);
+    });
+  });
+}
+
+function getDragAfter(list, y) {
+  const items = Array.from(list.querySelectorAll('.dnd-item:not(.dragging)'));
+  return items.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) return { offset, element: child };
+    return closest;
+  }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+}
+
+function updateDnDNumbers(list) {
+  list.querySelectorAll('.dnd-item').forEach((it, idx) => {
+    const numEl = it.querySelector('.dnd-num');
+    if (numEl) numEl.textContent = idx + 1;
+  });
 }
 
 /* ─── Reveal Solution (nach 3 Fehlversuchen) ──────────────────────────── */
@@ -210,12 +262,20 @@ function revealSolution(step) {
     const input = document.getElementById(`s${step}-input`);
     if (input) { input.value = sol.correct[0]; input.classList.remove('input-err'); input.classList.add('input-ok'); }
   } else if (sol.type === 'order') {
-    card.querySelectorAll('.order-row').forEach(r => {
-      const key = r.dataset.key;
-      r.querySelector('.order-select').value = sol.correct[key];
-      r.classList.remove('row-wrong');
-      r.classList.add('row-correct');
-    });
+    const list = card.querySelector('.dnd-list');
+    if (list) {
+      const items = Array.from(list.querySelectorAll('.dnd-item'));
+      const byKey = Object.fromEntries(items.map(it => [it.dataset.key, it]));
+      const orderedKeys = Object.entries(sol.correct)
+        .sort((a, b) => a[1].localeCompare(b[1]))
+        .map(e => e[0]);
+      orderedKeys.forEach(k => list.appendChild(byKey[k]));
+      list.querySelectorAll('.dnd-item').forEach(it => {
+        it.classList.remove('row-wrong');
+        it.classList.add('row-correct');
+      });
+      updateDnDNumbers(list);
+    }
   }
 
   const fb = document.getElementById('fb-' + step);

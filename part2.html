@@ -73,15 +73,15 @@
     </p>
     <div class="repo-options">
       <div class="repo-option">
-        <div class="repo-option-label">Option A — per Git klonen <span class="repo-badge">empfohlen</span></div>
+        <div class="repo-option-label"><span class="opt-tag opt-tag-a">Option A</span>per Git klonen <span class="repo-badge">empfohlen</span></div>
         <div class="code-block">git clone https://github.com/Nicocean/badecparams-curveball.git
 cd badecparams-curveball</div>
       </div>
       <div class="repo-option">
-        <div class="repo-option-label">Option B — als ZIP herunterladen</div>
+        <div class="repo-option-label"><span class="opt-tag opt-tag-b">Option B</span>als ZIP herunterladen</div>
         <p class="setup-req-help" style="margin:.3rem 0 .6rem">ZIP entpacken, dann Terminal in den entpackten Ordner öffnen.</p>
-        <a class="repo-zip-btn" href="https://github.com/Nicocean/badecparams-curveball/archive/refs/heads/main.zip" target="_blank" rel="noopener">
-          ↓ badecparams-curveball-main.zip von GitHub
+        <a class="repo-zip-btn" href="https://github.com/Nicocean/badecparams-curveball/archive/refs/heads/master.zip" target="_blank" rel="noopener">
+          ↓ badecparams-curveball-master.zip von GitHub
         </a>
       </div>
     </div>
@@ -90,13 +90,13 @@ cd badecparams-curveball</div>
     <ul class="setup-req-list">
       <li><strong>Python</strong> ― <code>python3 --version</code> ≥ 3.13</li>
       <li><strong>OpenSSL</strong> ― <code>openssl version</code> ≥ 1.1 im PATH</li>
-      <li><strong>Git</strong> ― für Option A (auf den meisten Linux/macOS-Systemen vorinstalliert)</li>
+      <li><strong>Git</strong> ― nur für <span class="opt-tag opt-tag-a">Option A</span> (auf den meisten Linux/macOS-Systemen vorinstalliert)</li>
       <li><strong>Port 8443</strong> ― muss frei sein, kein <code>sudo</code> nötig</li>
     </ul>
 
     <h3 class="setup-subtitle">Schritt 3 — Terminal einrichten</h3>
     <p class="setup-req-help">Alle Befehle sind identisch auf Linux, macOS und Windows (WSL 2). Terminal im Repo-Ordner öffnen, dann:</p>
-    <div class="code-block">cd badecparams-curveball   # ZIP-Download: cd badecparams-curveball-main
+    <div class="code-block">cd badecparams-curveball   # ZIP-Download: cd badecparams-curveball-master
 chmod +x badecparams.py httpd.py
 python3 -m venv .venv
 source .venv/bin/activate
@@ -113,12 +113,6 @@ openssl version</div>
         <summary>macOS</summary>
         Falls <code>openssl version</code> die Apple-LibreSSL-Variante zeigt: <code>brew install openssl</code>, dann <code>export PATH="/opt/homebrew/opt/openssl/bin:$PATH"</code>.
       </details>
-    </div>
-
-    <div class="setup-warning">
-      <strong>Achtung — keine festen Pfade.</strong> Alle Skripte erwarten die Dateien im
-      <em>aktuellen Arbeitsverzeichnis</em>. Immer erst mit <code>cd</code> in den Angriffsordner
-      wechseln, <em>dann</em> die venv aktivieren, dann die Skripte starten.
     </div>
 
     <div class="setup-actions">
@@ -165,31 +159,35 @@ openssl version</div>
       </header>
 
       <div class="step-hint" id="hint-1" hidden>
-        Das Feld <code>ASN1 OID:&nbsp;<em>prime256v1</em></code> steht für eine <strong>benannte Kurve</strong> —
-        Windows kennt die Domain-Parameter aus einer eingebauten Tabelle und nennt die Kurve nur
-        über ihre Kennnummer. Bei <em>expliziten Parametern</em> stünde stattdessen ein ganzer Block
-        mit den sechs Werten <code>p, a, b, G, n, h</code> ausgeschrieben.
+        Schau die Zeile <strong>direkt unter <code>Public Key Algorithm</code></strong> im Auszug an.
+        Steht dort nur eine Kennnummer wie <code>prime256v1</code>, ist das eine <em>benannte Kurve</em>:
+        die Domain-Parameter (<code>p, a, b, G, n, h</code>) stehen nicht im Zertifikat, sondern werden
+        aus einer Tabelle nachgeschlagen. Stünde stattdessen ein Block mit allen sechs Werten
+        ausgeschrieben, wären die Parameter <em>explizit</em>. → Genau dieser Unterschied ist die
+        Angriffs-Lücke.
       </div>
 
       <p>
-        Als Erstes schaust du dir das echte Zwischenzertifikat der <strong>COMODO ECC Extended Validation
-        Secure Server CA</strong> an. Achte auf drei Dinge: den öffentlichen Punkt <code>pub</code> — das
-        ist <em>Q</em> —, die Kennnummer <code>ASN1 OID: prime256v1</code> unter dem Punkt, und die
-        Erweiterung <code>CA:TRUE</code>. Letztere sagt, dass dieses Zertifikat weitere Zertifikate
-        ausstellen darf. Genau diese CA-Rolle wird der Angriff später vortäuschen.
+        Bevor wir angreifen, schauen wir uns das <strong>Ziel</strong> an: das echte Zwischenzertifikat
+        der <em>COMODO ECC Extended Validation Secure Server CA</em>. Es gehört zum vertrauten
+        Wurzelspeicher — und genau diese CA-Rolle wird der Angriff später vortäuschen.
       </p>
-      <div class="code-block">openssl x509 -in comodo-intermediate.crt -text -noout</div>
-      <div class="code-block">Public Key Algorithm: id-ecPublicKey
+      <p class="step-note">
+        <strong>Nichts ausführen —</strong> unten steht der relevante Auszug aus
+        <code>openssl x509 -in comodo-intermediate.crt -text -noout</code>, den wir dir vorbereitet haben.
+        Lies ihn und beantworte die Frage darunter.
+      </p>
+      <div class="code-block code-block-output">Public Key Algorithm: id-ecPublicKey
     ASN1 OID: prime256v1
     NIST CURVE: P-256
     pub:
-        04:57:70:1a:3f:...
+        04:57:70:1a:3f:...          ← öffentlicher Punkt Q
 X509v3 Basic Constraints: critical
-    CA:TRUE</div>
+    CA:TRUE                          ← darf weitere Zertifikate ausstellen</div>
 
       <div class="task-panel">
-        <div class="task-label">Aufgabe</div>
-        <div class="task-question">Wie ist die elliptische Kurve in diesem Zertifikat angegeben?</div>
+        <div class="task-label">Deine Aufgabe</div>
+        <div class="task-question">Wie sind die Kurven-Parameter in diesem Zertifikat angegeben? Wähle die Aussage, die zum Auszug oben passt.</div>
         <div class="options" data-task="s1">
           <label class="option-label"><input type="radio" name="s1" value="a"><span class="radio-dot"></span>Über eine Kennnummer <em>(benannte Kurve — nur der Name der Kurve steht drin).</em></label>
           <label class="option-label"><input type="radio" name="s1" value="b"><span class="radio-dot"></span>Als vollständig ausgeschriebene Domain-Parameter <em>(explizit — alle sechs Werte stehen im Zertifikat).</em></label>
@@ -258,7 +256,7 @@ X509v3 Basic Constraints: critical
       </div>
 
       <div class="task-panel">
-        <div class="task-label">Aufgabe · Zuordnung</div>
+        <div class="task-label">Deine Aufgabe · Zuordnung</div>
         <div class="task-question">Ordne jede Code-Zeile ihrem Formel-Anteil zu.</div>
         <div class="match-grid" data-task="s2">
           <div class="match-row">
@@ -388,13 +386,18 @@ X509v3 Basic Constraints: critical
         <div class="practice-line"><strong>Aufruf:</strong> keine Argumente nötig — die Chain-Datei wird über einen festen Dateinamen aus dem Arbeitsverzeichnis geladen.</div>
       </div>
       <div class="code-block">./badecparams.py</div>
-      <p>Nach ein paar Sekunden liegen sechs neue Dateien im Ordner:</p>
-      <div class="code-block">intermediateCA.crt    # Original + gefälschtes Zwischenzertifikat (zwei PEM-Blöcke!)
+      <p>Nach ein paar Sekunden liegen <strong>acht neue Dateien</strong> im Ordner — aufgeteilt in drei Blöcke:</p>
+      <div class="code-block">## Gefälschte Zertifizierungsstelle (Schritt 4)
+intermediateCA.crt    # Original + gefälschtes Zwischenzertifikat (zwei PEM-Blöcke)
 intermediateCA.key    # Angreifer-Schlüssel: k als privater Skalar zu G'
+
+## Code-Signing-Paket (Schritt 5)
 authenticode.crt      # Endzertifikat für Code-Signing
 authenticode.key      # dazugehöriger Schlüssel
 authenticode.spc      # signtool-Paket (PKCS#7-Zertifikatscontainer)
 authenticode.pvk      # signtool-Privatschlüssel
+
+## TLS-Endzertifikat (Schritt 6 &amp; 7)
 localhost.crt         # Endzertifikat für TLS (nsa.gov, microsoft.com, PayPal-Subject)
 localhost.key         # dazugehöriger Schlüssel</div>
       <p style="font-size:.9rem; color:var(--text-muted);">
@@ -403,33 +406,37 @@ localhost.key         # dazugehöriger Schlüssel</div>
       </p>
 
       <div class="task-panel">
-        <div class="task-label">Aufgabe · Reihenfolge</div>
-        <div class="task-question">Sortiere die vier Kern-Phasen des Angriffs in die richtige Reihenfolge (1 = zuerst).</div>
-        <div class="order-list" data-task="s3">
-          <div class="order-row" data-key="load">
-            <select class="order-select">
-              <option value="">—</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
-            </select>
-            <span class="order-label">Original-Zertifikatskette laden &amp; <em>Q</em> extrahieren</span>
+        <div class="task-label">Deine Aufgabe · Reihenfolge</div>
+        <div class="task-question">Ziehe die vier Kern-Phasen des Angriffs in die richtige Reihenfolge — oben zuerst, unten zuletzt.</div>
+        <div class="dnd-wrap">
+          <div class="dnd-arrow-col" aria-hidden="true">
+            <div class="dnd-arrow-label">Start</div>
+            <div class="dnd-arrow-shaft"></div>
+            <div class="dnd-arrow-head">▼</div>
+            <div class="dnd-arrow-label">Ende</div>
           </div>
-          <div class="order-row" data-key="k">
-            <select class="order-select">
-              <option value="">—</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
-            </select>
-            <span class="order-label">Angreifer-Skalar <em>k</em> wählen</span>
-          </div>
-          <div class="order-row" data-key="gprime">
-            <select class="order-select">
-              <option value="">—</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
-            </select>
-            <span class="order-label"><em>G' = k⁻¹ · Q</em> berechnen</span>
-          </div>
-          <div class="order-row" data-key="sign">
-            <select class="order-select">
-              <option value="">—</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
-            </select>
-            <span class="order-label">Gefälschtes Zwischenzertifikat + Endzertifikate signieren</span>
-          </div>
+          <ul class="dnd-list" id="dnd-s3" data-task="s3">
+            <li class="dnd-item" draggable="true" data-key="load">
+              <span class="dnd-handle" aria-hidden="true">⋮⋮</span>
+              <span class="dnd-num"></span>
+              <span class="dnd-text">Original-Zertifikatskette laden &amp; <em>Q</em> extrahieren</span>
+            </li>
+            <li class="dnd-item" draggable="true" data-key="k">
+              <span class="dnd-handle" aria-hidden="true">⋮⋮</span>
+              <span class="dnd-num"></span>
+              <span class="dnd-text">Angreifer-Skalar <em>k</em> wählen</span>
+            </li>
+            <li class="dnd-item" draggable="true" data-key="gprime">
+              <span class="dnd-handle" aria-hidden="true">⋮⋮</span>
+              <span class="dnd-num"></span>
+              <span class="dnd-text"><em>G' = k⁻¹ · Q</em> berechnen</span>
+            </li>
+            <li class="dnd-item" draggable="true" data-key="sign">
+              <span class="dnd-handle" aria-hidden="true">⋮⋮</span>
+              <span class="dnd-num"></span>
+              <span class="dnd-text">Gefälschtes Zwischenzertifikat + Endzertifikate signieren</span>
+            </li>
+          </ul>
         </div>
         <div class="task-feedback" id="fb-3"></div>
       </div>
@@ -456,24 +463,28 @@ localhost.key         # dazugehöriger Schlüssel</div>
       </header>
 
       <div class="step-hint" id="hint-4" hidden>
-        Ein Angreifer, der den privaten Schlüssel <em>d</em> der echten CA kennen würde, müsste weder
-        <em>Q</em> noch die Domain-Parameter anfassen. Ein Angriff auf die Seriennummer wäre auch
-        wirkungslos — der Vergleich passiert nicht darüber. Was <em>muss</em> also anders sein,
-        damit Windows den fremden Generator nutzt?
+        Vergleiche die Ausgabe unten Zeile für Zeile mit dem Auszug aus <strong>Schritt 1</strong>.
+        Der öffentliche Punkt <code>Q</code> ist identisch, die Seriennummer ebenfalls. Was steht
+        <em>anders</em> da, wo in Schritt 1 nur <code>ASN1 OID: prime256v1</code> stand?
+        → Genau dieser eine Unterschied macht den Angriff.
       </div>
 
       <p>
-        Aus Schritt 3 ist eine Datei <code>intermediateCA.crt</code> entstanden, die
-        <strong>zwei PEM-Blöcke</strong> enthält: oben das gefälschte Zwischenzertifikat, unten
-        das echte (unverändert). Beide werden später gemeinsam über die Leitung ausgeliefert.
-        Inspiziere jetzt die Ausgabe und lege sie in Gedanken direkt neben Schritt 1.
+        Aus Schritt 3 ist die Datei <code>intermediateCA.crt</code> entstanden — sie enthält
+        <strong>zwei PEM-Blöcke</strong>: oben das gefälschte Zwischenzertifikat, unten das echte
+        (unverändert). Beide werden später gemeinsam über die Leitung ausgeliefert.
+      </p>
+      <p class="step-note">
+        <strong>Vergleich mit Schritt 1:</strong> unten siehst du den Auszug aus dem gefälschten
+        Zwischenzertifikat. Achte darauf, was gegenüber Schritt 1 <em>gleich</em> und was
+        <em>anders</em> ist — die Antwort auf die Frage steckt genau in diesem Unterschied.
       </p>
       <div class="practice-box">
         <div class="practice-line"><strong>Vorbedingung:</strong> Schritt 3 wurde ausgeführt, <code>intermediateCA.crt</code> existiert.</div>
         <div class="practice-line"><strong>Was zu sehen sein wird:</strong> gleicher öffentlicher Punkt <code>pub</code>, gleiche Seriennummer, gleicher Subject — aber <strong>keine</strong> Zeile <code>ASN1 OID: prime256v1</code> mehr. Stattdessen ein ausgeschriebener Parameter-Block mit einem eigenen Generator.</div>
       </div>
       <div class="code-block">openssl x509 -in intermediateCA.crt -text -noout</div>
-      <div class="code-block">Public Key Algorithm: id-ecPublicKey
+      <div class="code-block code-block-output">Public Key Algorithm: id-ecPublicKey
     Field Type: prime-field
     Prime:  00:ff:ff:ff:ff:00:00:00:01:...   ← p, ausgeschrieben
     A:      00:ff:ff:ff:ff:00:00:00:01:...   ← Koeffizient a
@@ -486,8 +497,8 @@ localhost.key         # dazugehöriger Schlüssel</div>
         04:57:70:1a:3f:...                   ← Q identisch zu Schritt 1</div>
 
       <div class="task-panel">
-        <div class="task-label">Aufgabe · Kontrollfrage</div>
-        <div class="task-question">Worin unterscheiden sich die Ausgaben von Schritt 1 und Schritt 4?</div>
+        <div class="task-label">Deine Aufgabe · Kontrollfrage</div>
+        <div class="task-question">Worin unterscheiden sich die Ausgaben von Schritt 1 (echtes CA-Zertifikat) und Schritt 4 (gefälschtes)?</div>
         <div class="options" data-task="s4">
           <label class="option-label"><input type="radio" name="s4" value="a"><span class="radio-dot"></span>Im öffentlichen Schlüssel (Q-Bytes).</label>
           <label class="option-label"><input type="radio" name="s4" value="b"><span class="radio-dot"></span>In der Seriennummer.</label>
@@ -540,7 +551,7 @@ localhost.key         # dazugehöriger Schlüssel</div>
 1.3.6.1.4.1.311.2.1.22   # SPC_COMMERCIAL_SP_KEY_PURPOSE_OBJID</div>
 
       <div class="task-panel">
-        <div class="task-label">Aufgabe</div>
+        <div class="task-label">Deine Aufgabe</div>
         <div class="task-question">Woran erkennt man am Kennnummern-Präfix, dass es sich um Microsoft-Authenticode handelt?</div>
         <div class="options" data-task="s5">
           <label class="option-label"><input type="radio" name="s5" value="a"><span class="radio-dot"></span>Am Präfix <code>1.3.6.1.4.1.311</code> (Microsoft Enterprise).</label>
@@ -599,7 +610,7 @@ X509v3 Certificate Policies:
     Policy: 1.3.6.1.4.1.6449.1.2.1.5.1   # COMODO EV-Policy-Kennung</div>
 
       <div class="task-panel">
-        <div class="task-label">Aufgabe</div>
+        <div class="task-label">Deine Aufgabe</div>
         <div class="task-question">Warum zeigt ein ungepatchter Browser die Verbindung als „Extended Validation" an?</div>
         <div class="options" data-task="s6">
           <label class="option-label"><input type="radio" name="s6" value="a"><span class="radio-dot"></span>Weil das Endzertifikat eine bekannte EV-Policy-Kennung trägt und die Kette bei einer als EV-fähig gelisteten Zertifizierungsstelle endet.</label>
@@ -672,7 +683,7 @@ X509v3 Certificate Policies:
       </p>
 
       <div class="task-panel">
-        <div class="task-label">Aufgabe · Abschlusskontrolle</div>
+        <div class="task-label">Deine Aufgabe · Abschlusskontrolle</div>
         <div class="task-question">
           Welche zwei Bedingungen müssen gleichzeitig erfüllt sein, damit CurveBall auf einem
           ungepatchten Windows-System funktioniert?
