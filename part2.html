@@ -21,34 +21,145 @@
   <div class="page-header">
     <div class="badge">Teil 2 von 2</div>
     <h1>Durchführung</h1>
-    <p>Acht interaktive Schritte durch den Angriff. Jede Aufgabe muss richtig gelöst sein, um weiterzukommen.</p>
   </div>
 
-  <!-- ─── Stepper ─────────────────────────────────────────────────────────── -->
-  <div class="stepper" id="stepper" role="progressbar" aria-valuemin="1" aria-valuemax="8" aria-valuenow="1">
-    <div class="stepper-track">
-      <div class="stepper-fill" id="stepperFill" style="--fill: 0%;"></div>
-    </div>
-    <div class="stepper-nodes">
-      <div class="stepper-node active" data-step="1"><span class="stepper-num">1</span><span class="stepper-label">Zertifikat</span></div>
-      <div class="stepper-node"           data-step="2"><span class="stepper-num">2</span><span class="stepper-label">Idee</span></div>
-      <div class="stepper-node"           data-step="3"><span class="stepper-num">3</span><span class="stepper-label">Nachrechnen</span></div>
-      <div class="stepper-node"           data-step="4"><span class="stepper-num">4</span><span class="stepper-label">Angriff</span></div>
-      <div class="stepper-node"           data-step="5"><span class="stepper-num">5</span><span class="stepper-label">Fake-CA</span></div>
-      <div class="stepper-node"           data-step="6"><span class="stepper-num">6</span><span class="stepper-label">Code-Sign</span></div>
-      <div class="stepper-node"           data-step="7"><span class="stepper-num">7</span><span class="stepper-label">EV-Cert</span></div>
-      <div class="stepper-node"           data-step="8"><span class="stepper-num">8</span><span class="stepper-label">Leitung</span></div>
-    </div>
-  </div>
+  <!-- ═════════════════════════════════════════════════════════════════════════
+       SETUP-LANDING (vor dem Stepper) — erklärt Struktur + Voraussetzungen
+       ═════════════════════════════════════════════════════════════════════════ -->
+  <section class="setup-card" id="setupCard">
+    <div class="setup-eyebrow">Vor dem Start</div>
+    <h2 class="setup-title">Wie dieser Teil aufgebaut ist</h2>
+    <p class="setup-lead">
+      Der Angriff wird in sieben Schritten durchgespielt. Die ersten beiden sind Verständnis-Schritte,
+      die restlichen fünf enthalten konkrete Befehle im Terminal. Am Ende steht die Kette ausgeliefert
+      über HTTPS.
+    </p>
 
-  <!-- ─── Schritte (nur einer sichtbar) ────────────────────────────────────── -->
-  <div class="steps-container">
+    <div class="setup-blocks">
+      <div class="setup-block">
+        <div class="setup-block-icon">📖</div>
+        <div class="setup-block-body">
+          <h3>Verständnis-Schritte</h3>
+          <p><strong>Schritt 1</strong> zeigt das Zielzertifikat, <strong>Schritt 2</strong> die Angriffsidee samt Formel <code>G' = k⁻¹ · Q</code>. Kein Terminal nötig.</p>
+        </div>
+      </div>
+      <div class="setup-block">
+        <div class="setup-block-icon">⚡</div>
+        <div class="setup-block-body">
+          <h3>Praxis-Schritte</h3>
+          <p><strong>Schritt 3–7</strong> laufen im Terminal: <code>./badecparams.py</code> baut die Waffe, danach wird sie mit <code>openssl</code> inspiziert und mit <code>./httpd.py</code> über TLS ausgeliefert.</p>
+        </div>
+      </div>
+      <div class="setup-block">
+        <div class="setup-block-icon">🎯</div>
+        <div class="setup-block-body">
+          <h3>Ziel am Ende</h3>
+          <p>Ein <code>openssl s_client</code>-Handshake, in dem die gefälschte Zertifikatskette komplett über die Leitung ankommt — das Angriffsmaterial liegt nicht mehr auf der Platte.</p>
+        </div>
+      </div>
+    </div>
 
-    <!-- ═══ Schritt 1 ═══ -->
+    <!-- Repo-Download -->
+    <h3 class="setup-subtitle">Schritt 1 — Repo herunterladen</h3>
+    <p class="setup-req-help">Alle benötigten Dateien liegen in einem GitHub-Repo. Wähle eine der beiden Optionen:</p>
+    <div class="repo-options">
+      <div class="repo-option">
+        <div class="repo-option-label">Option A — per Git klonen <span class="repo-badge">empfohlen</span></div>
+        <div class="code-block">git clone https://github.com/Nicocean/badecparams-curveball.git
+cd badecparams-curveball</div>
+      </div>
+      <div class="repo-option">
+        <div class="repo-option-label">Option B — als ZIP herunterladen</div>
+        <p class="setup-req-help" style="margin:.3rem 0 .6rem">ZIP entpacken, dann Terminal in den entpackten Ordner öffnen.</p>
+        <a class="repo-zip-btn" href="https://github.com/Nicocean/badecparams-curveball/archive/refs/heads/main.zip" target="_blank" rel="noopener">
+          ↓ badecparams-curveball-main.zip von GitHub
+        </a>
+      </div>
+    </div>
+
+    <h3 class="setup-subtitle">Schritt 2 — Voraussetzungen</h3>
+    <div class="setup-req-grid">
+      <div class="setup-req">
+        <div class="setup-req-label">Python</div>
+        <div class="setup-req-val"><code>python3 --version</code> ≥ 3.13</div>
+      </div>
+      <div class="setup-req">
+        <div class="setup-req-label">OpenSSL</div>
+        <div class="setup-req-val"><code>openssl version</code> ≥ 1.1 — im PATH verfügbar</div>
+      </div>
+      <div class="setup-req">
+        <div class="setup-req-label">Git</div>
+        <div class="setup-req-val">Für Option A — bei den meisten Linux/macOS-Systemen vorinstalliert</div>
+      </div>
+      <div class="setup-req">
+        <div class="setup-req-label">Port 8443</div>
+        <div class="setup-req-val">Muss frei sein — kein <code>sudo</code> nötig</div>
+      </div>
+    </div>
+
+    <h3 class="setup-subtitle">Schritt 3 — Terminal einrichten</h3>
+    <p class="setup-req-help">Alle Befehle sind identisch auf Linux, macOS und Windows (WSL 2). Terminal im Repo-Ordner öffnen, dann:</p>
+    <div class="code-block">cd badecparams-curveball   # ZIP-Download: cd badecparams-curveball-main
+chmod +x badecparams.py httpd.py
+python3 -m venv .venv
+source .venv/bin/activate
+pip install "asn1crypto&gt;=1.5.1" "ecdsa&gt;=0.19.2"</div>
+    <p class="setup-req-help">Test — beide Befehle sollten ohne Fehler zurückkommen:</p>
+    <div class="code-block">python3 -c "import asn1crypto, ecdsa; print('ok')"
+openssl version</div>
+    <div class="setup-os-hints">
+      <details class="setup-os-detail">
+        <summary>Windows (WSL 2)</summary>
+        WSL 2 mit Ubuntu oder Kali muss installiert sein. Start: PowerShell → <code>wsl</code>. Repo am besten direkt im WSL-Home klonen (<code>cd ~</code>), nicht unter <code>/mnt/c/</code> — Dateisystem-Performance ist dort deutlich schlechter.
+      </details>
+      <details class="setup-os-detail">
+        <summary>macOS</summary>
+        Falls <code>openssl version</code> die Apple-LibreSSL-Variante zeigt: <code>brew install openssl</code>, dann <code>export PATH="/opt/homebrew/opt/openssl/bin:$PATH"</code>.
+      </details>
+    </div>
+
+    <div class="setup-warning">
+      <strong>Achtung — keine festen Pfade.</strong> Alle Skripte erwarten die Dateien im
+      <em>aktuellen Arbeitsverzeichnis</em>. Immer erst mit <code>cd</code> in den Angriffsordner
+      wechseln, <em>dann</em> die venv aktivieren, dann die Skripte starten.
+    </div>
+
+    <div class="setup-actions">
+      <button type="button" class="btn btn-primary btn-large" onclick="startSteps()">
+        Los geht's — Schritt 1 öffnen →
+      </button>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════════════════
+       STEPPER + SCHRITTE (initial versteckt, aufgedeckt durch startSteps())
+       ═════════════════════════════════════════════════════════════════════════ -->
+  <div class="steps-wrapper" id="stepsWrapper" hidden>
+
+    <div class="stepper" id="stepper" role="progressbar" aria-valuemin="1" aria-valuemax="7" aria-valuenow="1">
+      <div class="stepper-track">
+        <div class="stepper-fill" id="stepperFill" style="--fill: 0%;"></div>
+      </div>
+      <div class="stepper-nodes stepper-nodes-7">
+        <div class="stepper-node active" data-step="1"><span class="stepper-num">1</span><span class="stepper-label">Zertifikat</span></div>
+        <div class="stepper-node"        data-step="2"><span class="stepper-num">2</span><span class="stepper-label">Idee</span></div>
+        <div class="stepper-node"        data-step="3"><span class="stepper-num">3</span><span class="stepper-label">Angriff</span></div>
+        <div class="stepper-node"        data-step="4"><span class="stepper-num">4</span><span class="stepper-label">Fake-CA</span></div>
+        <div class="stepper-node"        data-step="5"><span class="stepper-num">5</span><span class="stepper-label">Code-Sign</span></div>
+        <div class="stepper-node"        data-step="6"><span class="stepper-num">6</span><span class="stepper-label">EV-Cert</span></div>
+        <div class="stepper-node"        data-step="7"><span class="stepper-num">7</span><span class="stepper-label">Leitung</span></div>
+      </div>
+    </div>
+
+    <div class="steps-container">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         Schritt 1 · Das Zielzertifikat
+         ═══════════════════════════════════════════════════════════════════════ -->
     <section class="step-card" data-step="1">
       <header class="step-header">
         <div>
-          <div class="step-eyebrow">Schritt 1 von 8</div>
+          <div class="step-eyebrow">Schritt 1 von 7 · Verständnis</div>
           <h2>Das Zielzertifikat</h2>
         </div>
         <button type="button" class="hint-btn" onclick="toggleHint(1)" aria-label="Hinweis zeigen">
@@ -57,31 +168,34 @@
       </header>
 
       <div class="step-hint" id="hint-1" hidden>
-        Das Feld <code>ASN1 OID:&nbsp;<em>prime256v1</em></code> ist eine <strong>benannte Kurve</strong> —
-        Windows kennt die Parameter aus einer eingebauten Tabelle. Bei <em>expliziten</em> Parametern
-        stünde stattdessen ein ganzer Block mit <code>p</code>, <code>a</code>, <code>b</code>, <code>G</code>,
-        <code>n</code>, <code>h</code> im Zertifikat.
+        Das Feld <code>ASN1 OID:&nbsp;<em>prime256v1</em></code> steht für eine <strong>benannte Kurve</strong> —
+        Windows kennt die Domain-Parameter aus einer eingebauten Tabelle und nennt die Kurve nur
+        über ihre Kennnummer. Bei <em>expliziten Parametern</em> stünde stattdessen ein ganzer Block
+        mit den sechs Werten <code>p, a, b, G, n, h</code> ausgeschrieben.
       </div>
 
       <p>
-        Inspiziere das echte Zwischenzertifikat der COMODO ECC EV CA. Achte auf den öffentlichen Punkt
-        <strong>pub</strong> (das ist <em>Q</em>), die Seriennummer und das Feld <code>ASN1 OID:&nbsp;prime256v1</code>.
-        <code>CA:TRUE</code> zeigt, dass dieses Zertifikat weitere Zertifikate ausstellen darf.
+        Als Erstes schaust du dir das echte Zwischenzertifikat der <strong>COMODO ECC Extended Validation
+        Secure Server CA</strong> an. Achte auf drei Dinge: den öffentlichen Punkt <code>pub</code> — das
+        ist <em>Q</em> —, die Kennnummer <code>ASN1 OID: prime256v1</code> unter dem Punkt, und die
+        Erweiterung <code>CA:TRUE</code>. Letztere sagt, dass dieses Zertifikat weitere Zertifikate
+        ausstellen darf. Genau diese CA-Rolle wird der Angriff später vortäuschen.
       </p>
       <div class="code-block">openssl x509 -in comodo-intermediate.crt -text -noout</div>
       <div class="code-block">Public Key Algorithm: id-ecPublicKey
     ASN1 OID: prime256v1
+    NIST CURVE: P-256
     pub:
-        04:3b:72:...
+        04:57:70:1a:3f:...
 X509v3 Basic Constraints: critical
     CA:TRUE</div>
 
       <div class="task-panel">
         <div class="task-label">Aufgabe</div>
-        <div class="task-question">Wie ist die Kurve in diesem Zertifikat angegeben?</div>
+        <div class="task-question">Wie ist die elliptische Kurve in diesem Zertifikat angegeben?</div>
         <div class="options" data-task="s1">
-          <label class="option-label"><input type="radio" name="s1" value="a"><span class="radio-dot"></span>Über einen Object Identifier <em>(benannte Kurve).</em></label>
-          <label class="option-label"><input type="radio" name="s1" value="b"><span class="radio-dot"></span>Als vollständig ausgeschriebene Parameter <em>(explizit).</em></label>
+          <label class="option-label"><input type="radio" name="s1" value="a"><span class="radio-dot"></span>Über eine Kennnummer <em>(benannte Kurve — nur der Name der Kurve steht drin).</em></label>
+          <label class="option-label"><input type="radio" name="s1" value="b"><span class="radio-dot"></span>Als vollständig ausgeschriebene Domain-Parameter <em>(explizit — alle sechs Werte stehen im Zertifikat).</em></label>
           <label class="option-label"><input type="radio" name="s1" value="c"><span class="radio-dot"></span>Über einen SHA-256-Fingerprint der Kurve.</label>
           <label class="option-label"><input type="radio" name="s1" value="d"><span class="radio-dot"></span>Gar nicht — nur der öffentliche Punkt <em>Q</em> reicht.</label>
         </div>
@@ -95,11 +209,13 @@ X509v3 Basic Constraints: critical
       </div>
     </section>
 
-    <!-- ═══ Schritt 2 ═══ -->
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         Schritt 2 · Die Idee  (+ optionaler Nachrechnen-Zusatz)
+         ═══════════════════════════════════════════════════════════════════════ -->
     <section class="step-card" data-step="2" hidden>
       <header class="step-header">
         <div>
-          <div class="step-eyebrow">Schritt 2 von 8</div>
+          <div class="step-eyebrow">Schritt 2 von 7 · Verständnis</div>
           <h2>Die Idee</h2>
         </div>
         <button type="button" class="hint-btn" onclick="toggleHint(2)" aria-label="Hinweis zeigen">
@@ -110,12 +226,16 @@ X509v3 Basic Constraints: critical
       <div class="step-hint" id="hint-2" hidden>
         Lies den Code Zeile für Zeile: <code>inverse_mod</code> liefert <code>k⁻¹</code>,
         dann wird der Punkt <code>Q</code> aus den Koordinaten zusammengesetzt, und schließlich
-        wird <code>Q</code> mit <code>k⁻¹</code> multipliziert. Genau die Reihenfolge in der Formel.
+        wird <code>Q</code> mit <code>k⁻¹</code> multipliziert. Genau die Reihenfolge der Formel.
       </div>
 
       <p>
-        Kein Befehl — nur Verstehen. Ordne jede Code-Zeile aus <code>get_exploit_generator()</code>
-        einem Bestandteil der Formel <code>G' = k⁻¹ · Q</code> zu.
+        Kein Terminal — nur Verstehen. Der Angreifer kennt den privaten Schlüssel <em>d</em> der echten
+        CA <strong>nicht</strong>. Der Trick: statt <em>d</em> zu bestimmen, wählt er einen eigenen
+        Skalar <em>k</em> und baut sich einen manipulierten Generator <em>G'</em> passend dazu. Weil
+        <code>k · G' = k · k⁻¹ · Q = Q</code>, funktioniert <em>k</em> als privater Schlüssel relativ zu
+        <em>G'</em> — der öffentliche Punkt <em>Q</em> bleibt derselbe wie bei der echten CA. Ordne
+        jede Zeile aus <code>get_exploit_generator()</code> ihrem Teil der Formel zu.
       </p>
 
       <div class="split-view">
@@ -131,9 +251,11 @@ X509v3 Basic Constraints: critical
           <h4>Formel</h4>
           <div class="formula">G' = k⁻¹ · Q</div>
           <p style="font-size:.85rem; color:var(--text-muted); margin:0;">
+            <strong>d</strong> = privater Schlüssel der echten CA (unbekannt).<br>
+            <strong>k</strong> = frei gewählter Skalar des Angreifers.<br>
             Weil <code>k · G' = k · k⁻¹ · Q = Q</code>, ist <code>k</code> ein gültiger
-            privater Schlüssel relativ zum neuen Generator <code>G'</code> —
-            <strong>ohne</strong> den privaten Schlüssel der CA zu kennen.
+            privater Schlüssel relativ zum manipulierten Generator <code>G'</code> —
+            <strong>ohne</strong> den echten Schlüssel <em>d</em> zu kennen.
           </p>
         </div>
       </div>
@@ -186,6 +308,55 @@ X509v3 Basic Constraints: critical
         <div class="task-feedback" id="fb-2"></div>
       </div>
 
+      <!-- ══════ Optionaler Zusatz: An echten Zahlen nachrechnen ══════ -->
+      <details class="optional-block">
+        <summary>
+          <span class="opt-star">⭐</span>
+          <span class="opt-title">Optional: An echten Zahlen nachrechnen</span>
+          <span class="opt-hint">Extra-Badge im Finale · zählt nicht für den Weiter-Button</span>
+        </summary>
+        <div class="optional-body">
+          <p>
+            Wer <em>G' = k⁻¹ · Q</em> nicht nur glauben, sondern auch nachrechnen will, kann das mit
+            dem Demo-Skript unten machen. Es liest <em>Q</em> aus dem Zwischenzertifikat, wählt ein
+            <em>k</em> (Argument <code>0</code> = zufällig), berechnet <em>G'</em> und verifiziert
+            die Gleichung an konkreten Zahlen — einmal mit <em>G'</em>, einmal mit dem echten <em>G</em>.
+          </p>
+
+          <button type="button" class="file-trigger"
+            onclick="openFileModal('curveball_demo.py', '/downloads/curveball_demo.py', 'demo')">
+            <span class="file-trigger-icon">🐍</span>
+            <div class="file-trigger-info">
+              <div class="file-trigger-name">curveball_demo.py</div>
+              <div class="file-trigger-desc">Berechnet und verifiziert G' = k⁻¹ · Q an echten Zahlen</div>
+            </div>
+            <span class="file-trigger-arrow">→ Details &amp; Download</span>
+          </button>
+
+          <div class="code-block">python3 curveball_demo.py comodo-intermediate.crt 0</div>
+          <div class="code-block">  ✓  gültig mit G'   ← Angriff würde funktionieren
+  ✗  ungültig mit G  ← gepatchter Verifier würde ablehnen</div>
+          <p style="font-size:.9rem; color:var(--text-muted);">
+            Mit dem manipulierten Generator <em>G'</em> ist die Signatur mathematisch korrekt;
+            mit dem echten Generator <em>G</em> schlägt sie fehl — genau das ist der Effekt des Patches.
+          </p>
+
+          <div class="task-panel task-panel-optional">
+            <div class="task-label">Bonus-Aufgabe · Zahlwert</div>
+            <div class="task-question">
+              In der Formel <em>k · G' = k · k⁻¹ · Q = Q</em> steckt die entscheidende Vereinfachung.
+              Was ergibt <strong>k · k⁻¹ mod n</strong> ?
+            </div>
+            <div class="input-row">
+              <input type="text" class="task-input" id="opt-input" placeholder="Zahl eingeben" autocomplete="off" inputmode="numeric">
+              <span style="font-size:.9rem; color:var(--text-muted);">(mod n)</span>
+              <button type="button" class="btn btn-ghost btn-small" onclick="checkOptional()">Prüfen</button>
+            </div>
+            <div class="task-feedback" id="fb-opt"></div>
+          </div>
+        </div>
+      </details>
+
       <div class="step-nav">
         <span class="attempts" id="att-2"></span>
         <button type="button" class="btn btn-ghost" id="solve-2" onclick="revealSolution(2)" hidden>Lösung zeigen</button>
@@ -193,12 +364,14 @@ X509v3 Basic Constraints: critical
       </div>
     </section>
 
-    <!-- ═══ Schritt 3 ═══ -->
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         Schritt 3 · Der Angriff (ausführen)
+         ═══════════════════════════════════════════════════════════════════════ -->
     <section class="step-card" data-step="3" hidden>
       <header class="step-header">
         <div>
-          <div class="step-eyebrow">Schritt 3 von 8</div>
-          <h2>Selbst nachrechnen</h2>
+          <div class="step-eyebrow">Schritt 3 von 7 · Praxis</div>
+          <h2>Der Angriff</h2>
         </div>
         <button type="button" class="hint-btn" onclick="toggleHint(3)" aria-label="Hinweis zeigen">
           <span class="hint-icon">?</span> Hinweis
@@ -206,104 +379,45 @@ X509v3 Basic Constraints: critical
       </header>
 
       <div class="step-hint" id="hint-3" hidden>
-        Erinnerung aus dem Endlichen-Körper-Rechnen: das <em>Inverse</em> einer Zahl mod n ist genau
-        die Zahl, mit der multipliziert das neutrale Element der Multiplikation entsteht.
-        In (ℤ/nℤ)* ist das neutrale Element … ganz einfach.
-      </div>
-
-      <p>
-        Das Demo-Skript liest <em>Q</em> aus dem Zertifikat, wählt ein <em>k</em> zufällig oder per Argument,
-        berechnet <em>G' = k⁻¹ · Q</em> und verifiziert die Beziehung mit konkreten Zahlen.
-      </p>
-
-      <div class="downloads">
-        <div class="download-item">
-          <div class="download-item-info">
-            <span class="download-icon">🐍</span>
-            <div>
-              <div class="download-name">curveball_demo.py</div>
-              <div class="download-desc">Berechnet und verifiziert <em>G' = k⁻¹ · Q</em> an konkreten Zahlen</div>
-            </div>
-          </div>
-          <a class="download-btn" href="/downloads/curveball_demo.py" download>↓ Download</a>
-        </div>
-      </div>
-
-      <div class="code-block">python3 curveball_demo.py comodo-intermediate.crt 0</div>
-      <div class="code-block">  ✓  gültig mit G'   ← Angriff würde funktionieren
-  ✗  ungültig mit G  ← gepatchter Verifier würde ablehnen</div>
-      <p style="font-size:.9rem; color:var(--text-muted);">
-        Mit dem manipulierten Generator <em>G'</em> ist die Signatur mathematisch korrekt;
-        mit dem echten Generator <em>G</em> schlägt sie fehl — genau das ist der Effekt des Patches.
-      </p>
-
-      <div class="task-panel">
-        <div class="task-label">Aufgabe · Zahlwert</div>
-        <div class="task-question">
-          In der Formel <em>k · G' = k · k⁻¹ · Q = Q</em> steckt die entscheidende Vereinfachung.
-          Was ergibt <strong>k · k⁻¹ mod n</strong> ?
-        </div>
-        <div class="input-row">
-          <input type="text" class="task-input" id="s3-input" placeholder="Zahl eingeben" autocomplete="off" inputmode="numeric">
-          <span style="font-size:.9rem; color:var(--text-muted);">(mod n)</span>
-        </div>
-        <div class="task-feedback" id="fb-3"></div>
-      </div>
-
-      <div class="step-nav">
-        <span class="attempts" id="att-3"></span>
-        <button type="button" class="btn btn-ghost" id="solve-3" onclick="revealSolution(3)" hidden>Lösung zeigen</button>
-        <button type="button" class="btn btn-primary" id="next-3" onclick="validateAndNext(3)">Prüfen &amp; Weiter →</button>
-      </div>
-    </section>
-
-    <!-- ═══ Schritt 4 ═══ -->
-    <section class="step-card" data-step="4" hidden>
-      <header class="step-header">
-        <div>
-          <div class="step-eyebrow">Schritt 4 von 8</div>
-          <h2>Der Angriff</h2>
-        </div>
-        <button type="button" class="hint-btn" onclick="toggleHint(4)" aria-label="Hinweis zeigen">
-          <span class="hint-icon">?</span> Hinweis
-        </button>
-      </header>
-
-      <div class="step-hint" id="hint-4" hidden>
         Ohne <em>k</em> kannst du <em>G'</em> nicht berechnen. Ohne die Original-Kette kennst du <em>Q</em> nicht.
-        Und ohne <em>G'</em> lässt sich das gefälschte Zertifikat nicht signieren. Am Ende brauchst du
-        die Endzertifikate für den TLS-Handshake.
+        Und ohne <em>G'</em> lässt sich das gefälschte Zwischenzertifikat nicht signieren. Am Ende brauchst
+        du die Endzertifikate für den TLS-Handshake.
       </div>
 
       <p>
-        Das Angriffsskript führt sechs Phasen aus. Die Reihenfolge ist zwingend —
-        jeder Schritt braucht das Ergebnis des vorherigen.
+        Jetzt wird die Waffe gebaut. <code>badecparams.py</code> lädt die Original-Kette, extrahiert
+        <em>Q</em> aus dem Zwischenzertifikat der COMODO ECC EV CA, wählt ein <em>k</em>, berechnet
+        <em>G' = k⁻¹ · Q</em>, ersetzt die Domain-Parameter durch explizite Werte mit <em>G'</em> als
+        Generator und signiert damit anschließend die drei Endzertifikate.
       </p>
 
-      <div class="downloads">
-        <div class="download-item">
-          <div class="download-item-info">
-            <span class="download-icon">🔑</span>
-            <div>
-              <div class="download-name">badecparams.py</div>
-              <div class="download-desc">Vollständiges Angriffsskript – erzeugt gefälschte CA und Endzertifikate</div>
-            </div>
-          </div>
-          <a class="download-btn" href="/downloads/badecparams.py" download>↓ Download</a>
-        </div>
+      <div class="setup-already-there">
+        ✅ <code>badecparams.py</code> und <code>comodoecccertificationauthority-ev-comodoca-com-chain.pem</code> liegen bereits im Repo-Ordner aus Schritt 0.
       </div>
 
+      <div class="practice-box">
+        <div class="practice-line"><strong>Vorbedingung:</strong> Beide Dateien oben liegen im Angriffsordner. Virtuelle Umgebung ist aktiv (<code>source .venv/bin/activate</code>).</div>
+        <div class="practice-line"><strong>Aufruf:</strong> keine Argumente nötig — die Chain-Datei wird über einen festen Dateinamen aus dem Arbeitsverzeichnis geladen.</div>
+      </div>
       <div class="code-block">./badecparams.py</div>
-      <p>Erzeugte Dateien nach dem Lauf:</p>
-      <div class="code-block">intermediateCA.crt   # Original + gefälschtes Zwischenzertifikat
-intermediateCA.key   # Angreifer-Schlüssel mit G' als Generator
-authenticode.crt / .key / .spc / .pvk
-localhost.crt / .key</div>
+      <p>Nach ein paar Sekunden liegen sechs neue Dateien im Ordner:</p>
+      <div class="code-block">intermediateCA.crt    # Original + gefälschtes Zwischenzertifikat (zwei PEM-Blöcke!)
+intermediateCA.key    # Angreifer-Schlüssel: k als privater Skalar zu G'
+authenticode.crt      # Endzertifikat für Code-Signing
+authenticode.key      # dazugehöriger Schlüssel
+authenticode.spc      # signtool-Paket (PKCS#7-Zertifikatscontainer)
+authenticode.pvk      # signtool-Privatschlüssel
+localhost.crt         # Endzertifikat für TLS (nsa.gov, microsoft.com, PayPal-Subject)
+localhost.key         # dazugehöriger Schlüssel</div>
+      <p style="font-size:.9rem; color:var(--text-muted);">
+        Sanity-Check: <code>ls -la intermediateCA.crt authenticode.spc localhost.crt</code> —
+        alle drei müssen existieren und &gt; 0 Byte sein.
+      </p>
 
       <div class="task-panel">
         <div class="task-label">Aufgabe · Reihenfolge</div>
         <div class="task-question">Sortiere die vier Kern-Phasen des Angriffs in die richtige Reihenfolge (1 = zuerst).</div>
-        <div class="order-list" data-task="s4">
+        <div class="order-list" data-task="s3">
           <div class="order-row" data-key="load">
             <select class="order-select">
               <option value="">—</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
@@ -314,7 +428,7 @@ localhost.crt / .key</div>
             <select class="order-select">
               <option value="">—</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
             </select>
-            <span class="order-label">Angreifer-Schlüssel <em>k</em> wählen</span>
+            <span class="order-label">Angreifer-Skalar <em>k</em> wählen</span>
           </div>
           <div class="order-row" data-key="gprime">
             <select class="order-select">
@@ -329,6 +443,69 @@ localhost.crt / .key</div>
             <span class="order-label">Gefälschtes Zwischenzertifikat + Endzertifikate signieren</span>
           </div>
         </div>
+        <div class="task-feedback" id="fb-3"></div>
+      </div>
+
+      <div class="step-nav">
+        <span class="attempts" id="att-3"></span>
+        <button type="button" class="btn btn-ghost" id="solve-3" onclick="revealSolution(3)" hidden>Lösung zeigen</button>
+        <button type="button" class="btn btn-primary" id="next-3" onclick="validateAndNext(3)">Prüfen &amp; Weiter →</button>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         Schritt 4 · Die gefälschte CA (inspizieren)
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <section class="step-card" data-step="4" hidden>
+      <header class="step-header">
+        <div>
+          <div class="step-eyebrow">Schritt 4 von 7 · Praxis</div>
+          <h2>Die gefälschte CA</h2>
+        </div>
+        <button type="button" class="hint-btn" onclick="toggleHint(4)" aria-label="Hinweis zeigen">
+          <span class="hint-icon">?</span> Hinweis
+        </button>
+      </header>
+
+      <div class="step-hint" id="hint-4" hidden>
+        Ein Angreifer, der den privaten Schlüssel <em>d</em> der echten CA kennen würde, müsste weder
+        <em>Q</em> noch die Domain-Parameter anfassen. Ein Angriff auf die Seriennummer wäre auch
+        wirkungslos — der Vergleich passiert nicht darüber. Was <em>muss</em> also anders sein,
+        damit Windows den fremden Generator nutzt?
+      </div>
+
+      <p>
+        Aus Schritt 3 ist eine Datei <code>intermediateCA.crt</code> entstanden, die
+        <strong>zwei PEM-Blöcke</strong> enthält: oben das gefälschte Zwischenzertifikat, unten
+        das echte (unverändert). Beide werden später gemeinsam über die Leitung ausgeliefert.
+        Inspiziere jetzt die Ausgabe und lege sie in Gedanken direkt neben Schritt 1.
+      </p>
+      <div class="practice-box">
+        <div class="practice-line"><strong>Vorbedingung:</strong> Schritt 3 wurde ausgeführt, <code>intermediateCA.crt</code> existiert.</div>
+        <div class="practice-line"><strong>Was zu sehen sein wird:</strong> gleicher öffentlicher Punkt <code>pub</code>, gleiche Seriennummer, gleicher Subject — aber <strong>keine</strong> Zeile <code>ASN1 OID: prime256v1</code> mehr. Stattdessen ein ausgeschriebener Parameter-Block mit einem eigenen Generator.</div>
+      </div>
+      <div class="code-block">openssl x509 -in intermediateCA.crt -text -noout</div>
+      <div class="code-block">Public Key Algorithm: id-ecPublicKey
+    Field Type: prime-field
+    Prime:  00:ff:ff:ff:ff:00:00:00:01:...   ← p, ausgeschrieben
+    A:      00:ff:ff:ff:ff:00:00:00:01:...   ← Koeffizient a
+    B:      5a:c6:35:d8:aa:3a:93:e7:...      ← Koeffizient b
+    Generator (uncompressed):
+        04: 4e:df:...                         ← G' statt G!
+    Order: ff:ff:ff:ff:00:00:00:00:...       ← n
+    Cofactor: 1                              ← h
+    pub:
+        04:57:70:1a:3f:...                   ← Q identisch zu Schritt 1</div>
+
+      <div class="task-panel">
+        <div class="task-label">Aufgabe · Kontrollfrage</div>
+        <div class="task-question">Worin unterscheiden sich die Ausgaben von Schritt 1 und Schritt 4?</div>
+        <div class="options" data-task="s4">
+          <label class="option-label"><input type="radio" name="s4" value="a"><span class="radio-dot"></span>Im öffentlichen Schlüssel (Q-Bytes).</label>
+          <label class="option-label"><input type="radio" name="s4" value="b"><span class="radio-dot"></span>In der Seriennummer.</label>
+          <label class="option-label"><input type="radio" name="s4" value="c"><span class="radio-dot"></span>Statt <code>ASN1 OID: prime256v1</code> stehen die Domain-Parameter ausgeschrieben — mit einem anderen Generator.</label>
+          <label class="option-label"><input type="radio" name="s4" value="d"><span class="radio-dot"></span>Im Inhaber (Subject).</label>
+        </div>
         <div class="task-feedback" id="fb-4"></div>
       </div>
 
@@ -339,12 +516,14 @@ localhost.crt / .key</div>
       </div>
     </section>
 
-    <!-- ═══ Schritt 5 ═══ -->
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         Schritt 5 · Codesignatur
+         ═══════════════════════════════════════════════════════════════════════ -->
     <section class="step-card" data-step="5" hidden>
       <header class="step-header">
         <div>
-          <div class="step-eyebrow">Schritt 5 von 8</div>
-          <h2>Die gefälschte CA</h2>
+          <div class="step-eyebrow">Schritt 5 von 7 · Praxis</div>
+          <h2>Codesignatur</h2>
         </div>
         <button type="button" class="hint-btn" onclick="toggleHint(5)" aria-label="Hinweis zeigen">
           <span class="hint-icon">?</span> Hinweis
@@ -352,26 +531,34 @@ localhost.crt / .key</div>
       </header>
 
       <div class="step-hint" id="hint-5" hidden>
-        Ein Angreifer, der den privaten Schlüssel der CA kennt, würde weder Q noch die Kurvenparameter
-        anfassen. Und ein Angriff auf die Seriennummer wäre irrelevant — der Vergleich passiert über
-        <em>Q</em>. Was <em>muss</em> anders sein, damit Windows den fremden Generator nutzt?
+        Die Präfixe verraten den Kontext: <code>1.3.6.1.4.1.311.*</code> ist ein reservierter
+        Microsoft-Zweig für Authenticode. <code>2.5.29.*</code> wären generische X.509-Erweiterungen,
+        <code>1.3.6.1.5.5.7.*</code> wären PKIX-Erweiterungen. Welcher Zweig gehört zu Authenticode?
       </div>
 
       <p>
-        Inspiziere das gefälschte Zwischenzertifikat und lege die Ausgabe direkt neben die aus Schritt 1.
-        Beide Zertifikate haben denselben öffentlichen Punkt <em>Q</em> und dieselbe Seriennummer —
-        aber der Parameterblock ist unterschiedlich.
+        Neben dem TLS-Endzertifikat aus Schritt 3 wurde parallel ein Authenticode-Paket erzeugt —
+        das sind die Dateien <code>authenticode.spc</code> und <code>authenticode.pvk</code>. Sie sind
+        das Windows-Format für Code-Signing mit <code>signtool</code>. Auf einem ungepatchten System
+        ließe sich damit eine ausführbare Datei signieren, die Windows als vertrauenswürdig einstuft.
       </p>
-      <div class="code-block">openssl x509 -in intermediateCA.crt -text -noout</div>
+      <div class="practice-box">
+        <div class="practice-line"><strong>Vorbedingung:</strong> Schritt 3 wurde ausgeführt, <code>authenticode.spc</code> existiert.</div>
+        <div class="practice-line"><strong>Was zu sehen sein wird:</strong> zwei Microsoft-Kennungen aus dem Zweig <code>1.3.6.1.4.1.311</code>, die den Verwendungszweck „Code-Signing" markieren.</div>
+      </div>
+      <div class="code-block">openssl pkcs7 -inform DER -in authenticode.spc -print_certs -noout</div>
+      <p>Sichtbare Kennungen (Object Identifier) in der Ausgabe:</p>
+      <div class="code-block">1.3.6.1.4.1.311.2.1.21   # SPC_INDIVIDUAL_SP_KEY_PURPOSE_OBJID
+1.3.6.1.4.1.311.2.1.22   # SPC_COMMERCIAL_SP_KEY_PURPOSE_OBJID</div>
 
       <div class="task-panel">
         <div class="task-label">Aufgabe</div>
-        <div class="task-question">Worin unterscheiden sich die Ausgaben von Schritt 1 und Schritt 5?</div>
+        <div class="task-question">Woran erkennt man am Kennnummern-Präfix, dass es sich um Microsoft-Authenticode handelt?</div>
         <div class="options" data-task="s5">
-          <label class="option-label"><input type="radio" name="s5" value="a"><span class="radio-dot"></span>Im öffentlichen Schlüssel (Q-Bytes).</label>
-          <label class="option-label"><input type="radio" name="s5" value="b"><span class="radio-dot"></span>In der Seriennummer.</label>
-          <label class="option-label"><input type="radio" name="s5" value="c"><span class="radio-dot"></span>Statt <code>ASN1 OID: prime256v1</code> stehen ausgeschriebene Parameter mit eigenem Generator.</label>
-          <label class="option-label"><input type="radio" name="s5" value="d"><span class="radio-dot"></span>Im Inhaber (Subject).</label>
+          <label class="option-label"><input type="radio" name="s5" value="a"><span class="radio-dot"></span>Am Präfix <code>1.3.6.1.4.1.311</code> (Microsoft Enterprise).</label>
+          <label class="option-label"><input type="radio" name="s5" value="b"><span class="radio-dot"></span>Am Präfix <code>2.5.29</code> (X.509-Standarderweiterungen).</label>
+          <label class="option-label"><input type="radio" name="s5" value="c"><span class="radio-dot"></span>An der Länge der Kennnummer (immer 7 Segmente).</label>
+          <label class="option-label"><input type="radio" name="s5" value="d"><span class="radio-dot"></span>Am Suffix <code>.21</code> / <code>.22</code>.</label>
         </div>
         <div class="task-feedback" id="fb-5"></div>
       </div>
@@ -383,12 +570,14 @@ localhost.crt / .key</div>
       </div>
     </section>
 
-    <!-- ═══ Schritt 6 ═══ -->
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         Schritt 6 · Das EV-Zertifikat
+         ═══════════════════════════════════════════════════════════════════════ -->
     <section class="step-card" data-step="6" hidden>
       <header class="step-header">
         <div>
-          <div class="step-eyebrow">Schritt 6 von 8</div>
-          <h2>Codesignatur</h2>
+          <div class="step-eyebrow">Schritt 6 von 7 · Praxis</div>
+          <h2>Das EV-Zertifikat</h2>
         </div>
         <button type="button" class="hint-btn" onclick="toggleHint(6)" aria-label="Hinweis zeigen">
           <span class="hint-icon">?</span> Hinweis
@@ -396,29 +585,39 @@ localhost.crt / .key</div>
       </header>
 
       <div class="step-hint" id="hint-6" hidden>
-        Die OID-Präfixe verraten den Kontext: <code>1.3.6.1.4.1.311.*</code> ist ein reservierter
-        Microsoft-Zweig. <code>2.5.29.*</code> wären generische X.509-Erweiterungen.
-        Welcher Zweig gehört zu Authenticode?
+        Der grüne EV-Balken erschien in älteren Browsern, wenn zwei Bedingungen zutrafen: das
+        Endzertifikat trägt eine bekannte EV-Policy-Kennung <em>und</em> die Kette endet bei einer
+        als EV-fähig gelisteten Zertifizierungsstelle. Der Subject-Name (hier absichtlich „PayPal, Inc.")
+        wurde dann prominent im UI angezeigt.
       </div>
 
       <p>
-        Das Authenticode-Paket enthält Microsoft-spezifische OIDs für Code-Signing.
-        Auf einem ungepatchten System ließe sich damit eine ausführbare Datei signieren,
-        die Windows als vertrauenswürdig einstuft.
+        Das dritte Endzertifikat ist <code>localhost.crt</code> — das TLS-Zertifikat für den Handshake
+        in Schritt 7. Es ist ausgestellt auf <code>nsa.gov</code>, <code>www.nsa.gov</code>,
+        <code>microsoft.com</code>, <code>www.microsoft.com</code> und <code>localhost</code>,
+        trägt bewusst den Subject-Namen „PayPal, Inc." und die Extended-Validation-Kennung von COMODO.
+        Signiert wurde es von der gefälschten Zertifizierungsstelle aus Schritt 4.
       </p>
-      <div class="code-block">openssl pkcs7 -inform DER -in authenticode.spc -print_certs -noout</div>
-      <p>Sichtbare OIDs in der Ausgabe:</p>
-      <div class="code-block">1.3.6.1.4.1.311.2.1.21   # SPC_INDIVIDUAL_SP_KEY_PURPOSE_OBJID
-1.3.6.1.4.1.311.2.1.22   # SPC_COMMERCIAL_SP_KEY_PURPOSE_OBJID</div>
+      <div class="practice-box">
+        <div class="practice-line"><strong>Vorbedingung:</strong> Schritt 3 wurde ausgeführt, <code>localhost.crt</code> existiert.</div>
+        <div class="practice-line"><strong>Was zu sehen sein wird:</strong> mehrere Subject-Alternative-Names für berühmte Domains, ein Policy-Eintrag mit COMODOs EV-Kennung, und dass das Zertifikat unter der gefälschten CA hängt.</div>
+      </div>
+      <div class="code-block">openssl x509 -in localhost.crt -text -noout</div>
+      <div class="code-block">Subject: ... O=PayPal, Inc. ...
+X509v3 Subject Alternative Name:
+    DNS:localhost, DNS:nsa.gov, DNS:www.nsa.gov,
+    DNS:microsoft.com, DNS:www.microsoft.com
+X509v3 Certificate Policies:
+    Policy: 1.3.6.1.4.1.6449.1.2.1.5.1   # COMODO EV-Policy-Kennung</div>
 
       <div class="task-panel">
         <div class="task-label">Aufgabe</div>
-        <div class="task-question">Woran erkennt man am OID-Präfix, dass es sich um Microsoft-Authenticode handelt?</div>
+        <div class="task-question">Warum zeigt ein ungepatchter Browser die Verbindung als „Extended Validation" an?</div>
         <div class="options" data-task="s6">
-          <label class="option-label"><input type="radio" name="s6" value="a"><span class="radio-dot"></span>Am Präfix <code>1.3.6.1.4.1.311</code> (Microsoft Enterprise).</label>
-          <label class="option-label"><input type="radio" name="s6" value="b"><span class="radio-dot"></span>Am Präfix <code>2.5.29</code> (X.509-Standarderweiterungen).</label>
-          <label class="option-label"><input type="radio" name="s6" value="c"><span class="radio-dot"></span>An der Länge der OID (immer 7 Segmente).</label>
-          <label class="option-label"><input type="radio" name="s6" value="d"><span class="radio-dot"></span>Am Suffix <code>.21</code> / <code>.22</code>.</label>
+          <label class="option-label"><input type="radio" name="s6" value="a"><span class="radio-dot"></span>Weil das Endzertifikat eine bekannte EV-Policy-Kennung trägt und die Kette bei einer als EV-fähig gelisteten Zertifizierungsstelle endet.</label>
+          <label class="option-label"><input type="radio" name="s6" value="b"><span class="radio-dot"></span>Weil der Subject-Name „PayPal" enthält.</label>
+          <label class="option-label"><input type="radio" name="s6" value="c"><span class="radio-dot"></span>Weil <code>localhost</code> als DNS-Eintrag drinsteht.</label>
+          <label class="option-label"><input type="radio" name="s6" value="d"><span class="radio-dot"></span>Weil das Zertifikat einen SHA-256-Hash verwendet.</label>
         </div>
         <div class="task-feedback" id="fb-6"></div>
       </div>
@@ -430,12 +629,14 @@ localhost.crt / .key</div>
       </div>
     </section>
 
-    <!-- ═══ Schritt 7 ═══ -->
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         Schritt 7 · Über die Leitung
+         ═══════════════════════════════════════════════════════════════════════ -->
     <section class="step-card" data-step="7" hidden>
       <header class="step-header">
         <div>
-          <div class="step-eyebrow">Schritt 7 von 8</div>
-          <h2>Das EV-Zertifikat</h2>
+          <div class="step-eyebrow">Schritt 7 von 7 · Praxis · Finale</div>
+          <h2>Über die Leitung</h2>
         </div>
         <button type="button" class="hint-btn" onclick="toggleHint(7)" aria-label="Hinweis zeigen">
           <span class="hint-icon">?</span> Hinweis
@@ -443,34 +644,56 @@ localhost.crt / .key</div>
       </header>
 
       <div class="step-hint" id="hint-7" hidden>
-        Der grüne EV-Balken erschien vor Chrome/Edge 77, wenn zwei Dinge zutrafen:
-        das Endzertifikat trägt eine bekannte EV-Policy-OID <em>und</em> die Kette endet
-        bei einer als EV-fähig gelisteten CA. Der Subject-Name (hier absichtlich „PayPal, Inc.")
-        wird dann im UI groß angezeigt.
+        Zwei Faktoren müssen zusammenkommen: der Verifier muss den Generator aus dem Zertifikat
+        übernehmen <em>und</em> das Zertifikat muss denselben öffentlichen Punkt <em>Q</em> tragen
+        wie eine bereits vertraute Zertifizierungsstelle im Zwischenspeicher. Fehlt eins von beiden,
+        greift der Trick nicht.
       </div>
 
       <p>
-        <code>localhost.crt</code> ist ein selbst signiertes TLS-Endzertifikat mit
-        Extended-Validation-Kennung. Es ist auf <code>nsa.gov</code> und <code>microsoft.com</code>
-        ausgestellt und trägt bewusst den Subject-Namen „PayPal, Inc." — signiert von der
-        gefälschten CA.
+        Das Angriffsmaterial liegt bisher nur auf der Platte. Der letzte Schritt liefert es über
+        HTTPS aus. <code>httpd.py</code> ist ein winziger Python-TLS-Server, der auf Port
+        <strong>8443</strong> lauscht und die gefälschte Zertifikatskette per Handshake ausliefert.
+        Als Argument braucht er den Pfad zum Schlüssel und liest daneben liegend
+        <code>localhost.crt</code> und <code>intermediateCA.crt</code> ein.
       </p>
-      <div class="code-block">openssl x509 -in localhost.crt -text -noout</div>
-      <div class="code-block">Subject: ... O=PayPal, Inc. ...
-X509v3 Subject Alternative Name:
-    DNS:localhost, DNS:nsa.gov, DNS:www.nsa.gov,
-    DNS:microsoft.com, DNS:www.microsoft.com
-Certificate Policies:
-    1.3.6.1.4.1.6449.1.2.1.5.1   # COMODO EV-Policy-OID</div>
+
+      <div class="setup-already-there">
+        ✅ <code>httpd.py</code> liegt bereits im Repo-Ordner aus Schritt 0.
+      </div>
+
+      <div class="practice-box">
+        <div class="practice-line"><strong>Vorbedingung:</strong> Schritt 3 wurde ausgeführt. <code>localhost.key</code>, <code>localhost.crt</code> und <code>intermediateCA.crt</code> liegen im aktuellen Ordner.</div>
+        <div class="practice-line"><strong>Terminal 1 — Server starten:</strong></div>
+      </div>
+      <div class="code-block">./httpd.py localhost.key</div>
+      <p style="font-size:.9rem; color:var(--text-muted);">
+        Der Server bindet sich auf <code>127.0.0.1:8443</code> und wartet auf Verbindungen. Läuft im
+        Vordergrund — Konsole offen lassen, mit <kbd>Ctrl</kbd>+<kbd>C</kbd> beenden.
+      </p>
+      <div class="practice-box">
+        <div class="practice-line"><strong>Terminal 2 — Handshake auslösen:</strong></div>
+      </div>
+      <div class="code-block">openssl s_client -connect localhost:8443 -showcerts</div>
+      <p style="font-size:.9rem; color:var(--text-muted);">
+        Der Handshake zeigt drei Zertifikate übereinander:<br>
+        &nbsp;&nbsp;<code>0 s:CN=PayPal, Inc. ...</code> — das gefälschte Endzertifikat,<br>
+        &nbsp;&nbsp;<code>1 s:CN=COMODO ECC Extended Validation ...</code> — die gefälschte CA (mit expliziten Parametern und <em>G'</em>),<br>
+        &nbsp;&nbsp;<code>2 s:CN=COMODO ECC Extended Validation ...</code> — dasselbe Zwischenzertifikat, diesmal echt (mit benannter Kurve).<br>
+        Ein ungepatchter Windows-Client würde diese Kette akzeptieren, weil sein Zwischenspeicher-Vergleich nur <em>Q</em> und Seriennummer prüft — die Domain-Parameter kommen aus dem gerade eingelieferten Zertifikat.
+      </p>
 
       <div class="task-panel">
-        <div class="task-label">Aufgabe</div>
-        <div class="task-question">Warum zeigt ein ungepatchter Browser die Verbindung als „Extended Validation" an?</div>
+        <div class="task-label">Aufgabe · Abschlusskontrolle</div>
+        <div class="task-question">
+          Welche zwei Bedingungen müssen gleichzeitig erfüllt sein, damit CurveBall auf einem
+          ungepatchten Windows-System funktioniert?
+        </div>
         <div class="options" data-task="s7">
-          <label class="option-label"><input type="radio" name="s7" value="a"><span class="radio-dot"></span>Weil das Endzertifikat eine bekannte EV-Policy-OID trägt und die Kette bei einer als EV-fähig gelisteten CA endet.</label>
-          <label class="option-label"><input type="radio" name="s7" value="b"><span class="radio-dot"></span>Weil der Subject-Name „PayPal" enthält.</label>
-          <label class="option-label"><input type="radio" name="s7" value="c"><span class="radio-dot"></span>Weil <code>localhost</code> als DNS-Eintrag drinsteht.</label>
-          <label class="option-label"><input type="radio" name="s7" value="d"><span class="radio-dot"></span>Weil das Zertifikat einen SHA-256-Hash verwendet.</label>
+          <label class="option-label"><input type="radio" name="s7" value="a"><span class="radio-dot"></span>SHA-256 muss gebrochen sein und der Angreifer muss den privaten Schlüssel <em>d</em> der CA kennen.</label>
+          <label class="option-label"><input type="radio" name="s7" value="b"><span class="radio-dot"></span>Der Verifier übernimmt den Generator aus dem Zertifikat, und der öffentliche Punkt <em>Q</em> stimmt mit dem einer vertrauten Zertifizierungsstelle überein.</label>
+          <label class="option-label"><input type="radio" name="s7" value="c"><span class="radio-dot"></span>Der Client nutzt Firefox und die Seriennummer ist doppelt.</label>
+          <label class="option-label"><input type="radio" name="s7" value="d"><span class="radio-dot"></span>Das Zertifikat ist abgelaufen und der Angreifer hat Netzwerkzugang.</label>
         </div>
         <div class="task-feedback" id="fb-7"></div>
       </div>
@@ -478,76 +701,13 @@ Certificate Policies:
       <div class="step-nav">
         <span class="attempts" id="att-7"></span>
         <button type="button" class="btn btn-ghost" id="solve-7" onclick="revealSolution(7)" hidden>Lösung zeigen</button>
-        <button type="button" class="btn btn-primary" id="next-7" onclick="validateAndNext(7)">Prüfen &amp; Weiter →</button>
+        <button type="button" class="btn btn-primary" id="next-7" onclick="validateAndNext(7)">Abschließen →</button>
       </div>
     </section>
 
-    <!-- ═══ Schritt 8 ═══ -->
-    <section class="step-card" data-step="8" hidden>
-      <header class="step-header">
-        <div>
-          <div class="step-eyebrow">Schritt 8 von 8</div>
-          <h2>Über die Leitung</h2>
-        </div>
-        <button type="button" class="hint-btn" onclick="toggleHint(8)" aria-label="Hinweis zeigen">
-          <span class="hint-icon">?</span> Hinweis
-        </button>
-      </header>
-
-      <div class="step-hint" id="hint-8" hidden>
-        Zwei Faktoren müssen zusammenkommen: der Verifier muss den Generator aus dem Zertifikat übernehmen
-        <em>und</em> das Zertifikat muss denselben öffentlichen Punkt tragen wie eine bereits vertraute CA.
-        Fehlt eins von beiden, greift der Trick nicht.
-      </div>
-
-      <p>
-        Starte den TLS-Server und verbinde dich mit OpenSSL. Der Handshake liefert die vollständige
-        gefälschte Kette — das Angriffsmaterial geht jetzt über das Netz.
-      </p>
-
-      <div class="downloads">
-        <div class="download-item">
-          <div class="download-item-info">
-            <span class="download-icon">🌐</span>
-            <div>
-              <div class="download-name">httpd.py</div>
-              <div class="download-desc">TLS-Miniserver – liefert die gefälschte Zertifikatskette per Handshake aus</div>
-            </div>
-          </div>
-          <a class="download-btn" href="/downloads/httpd.py" download>↓ Download</a>
-        </div>
-      </div>
-
-      <div class="code-block">sudo ./httpd.py localhost.key</div>
-      <p>In einem zweiten Terminal:</p>
-      <div class="code-block">openssl s_client -connect localhost:8443 -showcerts</div>
-      <p style="font-size:.9rem; color:var(--text-muted);">
-        In der Ausgabe sind drei Zertifikate sichtbar: Endzertifikat → gefälschte CA → Original-CA.
-        Ein ungepatchter Windows-Client würde diese Kette akzeptieren.
-      </p>
-
-      <div class="task-panel">
-        <div class="task-label">Aufgabe · Abschlusskontrolle</div>
-        <div class="task-question">
-          Welche zwei Bedingungen müssen gleichzeitig erfüllt sein, damit CurveBall auf einem Windows-System funktioniert?
-        </div>
-        <div class="options" data-task="s8">
-          <label class="option-label"><input type="radio" name="s8" value="a"><span class="radio-dot"></span>SHA-256 muss gebrochen sein und der Angreifer muss den privaten Schlüssel der CA kennen.</label>
-          <label class="option-label"><input type="radio" name="s8" value="b"><span class="radio-dot"></span>Der Verifier übernimmt den Generator aus dem Zertifikat und der öffentliche Punkt stimmt mit dem einer vertrauten CA überein.</label>
-          <label class="option-label"><input type="radio" name="s8" value="c"><span class="radio-dot"></span>Der Client nutzt Firefox und die Seriennummer ist doppelt.</label>
-          <label class="option-label"><input type="radio" name="s8" value="d"><span class="radio-dot"></span>Das Zertifikat ist abgelaufen und der Angreifer hat Netzwerkzugang.</label>
-        </div>
-        <div class="task-feedback" id="fb-8"></div>
-      </div>
-
-      <div class="step-nav">
-        <span class="attempts" id="att-8"></span>
-        <button type="button" class="btn btn-ghost" id="solve-8" onclick="revealSolution(8)" hidden>Lösung zeigen</button>
-        <button type="button" class="btn btn-primary" id="next-8" onclick="validateAndNext(8)">Abschließen →</button>
-      </div>
-    </section>
-
-    <!-- ═══ Finale (Teil-2-Abschluss) ═══ -->
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         Finale
+         ═══════════════════════════════════════════════════════════════════════ -->
     <section class="step-card finale-card" data-step="finale" hidden>
       <div class="finale-badge">🏁 Teil 2 abgeschlossen</div>
       <h2>CurveBall verstanden.</h2>
@@ -560,22 +720,22 @@ Certificate Policies:
         <div class="recap-item">
           <div class="recap-num">1</div>
           <div>
-            <div class="recap-title">Der Bypass sitzt im Root-Store-Vergleich</div>
-            <div class="recap-body">Windows prüft nur <em>Q</em> und Seriennummer gegen den lokalen Cache — den Generator übernimmt es aus dem Zertifikat.</div>
+            <div class="recap-title">Der blinde Fleck sitzt im Zwischenspeicher-Vergleich</div>
+            <div class="recap-body">Windows prüft im Zwischenspeicher nur <em>Q</em> und Seriennummer gegen den Wurzelspeicher-Eintrag — die Domain-Parameter, allen voran der Generator, kommen ungeprüft aus dem eingelieferten Zertifikat.</div>
           </div>
         </div>
         <div class="recap-item">
           <div class="recap-num">2</div>
           <div>
             <div class="recap-title">Der Trick: eigenen Generator wählen</div>
-            <div class="recap-body">Mit selbstgewähltem <em>k</em> und <em>G' = k⁻¹ · Q</em> passt <em>k</em> als privater Schlüssel — ohne den echten je zu berechnen.</div>
+            <div class="recap-body">Mit selbstgewähltem <em>k</em> und <em>G' = k⁻¹ · Q</em> passt <em>k</em> als privater Schlüssel relativ zu <em>G'</em> — ohne den echten Schlüssel <em>d</em> je zu berechnen.</div>
           </div>
         </div>
         <div class="recap-item">
           <div class="recap-num">3</div>
           <div>
             <div class="recap-title">Fix: KB4534273 (14.01.2020)</div>
-            <div class="recap-body">Der Patch erzwingt, dass beim Cache-Abgleich <em>alle</em> Kurvenparameter — insbesondere <em>G</em> — geprüft werden.</div>
+            <div class="recap-body">Der Patch erzwingt, dass beim Zwischenspeicher-Abgleich <em>alle</em> Domain-Parameter — insbesondere <em>G</em> — mit dem Wurzelspeicher-Eintrag verglichen werden.</div>
           </div>
         </div>
       </div>
@@ -587,7 +747,11 @@ Certificate Policies:
         </div>
         <div class="score-pill">
           <span class="score-pill-label">Ohne Hinweis gelöst</span>
-          <span class="score-pill-val" id="cleanSteps">0/8</span>
+          <span class="score-pill-val" id="cleanSteps">0/7</span>
+        </div>
+        <div class="score-pill score-pill-optional" id="optionalPill" hidden>
+          <span class="score-pill-label">Extra-Badge</span>
+          <span class="score-pill-val">⭐ Nachrechner</span>
         </div>
       </div>
 
@@ -597,13 +761,33 @@ Certificate Policies:
       </div>
     </section>
 
-  </div><!-- .steps-container -->
+    </div><!-- .steps-container -->
+  </div><!-- .steps-wrapper -->
 </div><!-- .page -->
 
 <script src="/static/file-guard.js"></script>
 <script src="/static/theme.js"></script>
 <script src="/static/theorie.js"></script>
 <script src="/static/part2.js"></script>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       DOWNLOAD-OVERLAY MODAL
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <div class="file-modal-backdrop" id="fileModalBackdrop" hidden onclick="closeFileModal(event)">
+    <div class="file-modal" role="dialog" aria-labelledby="fileModalTitle" aria-modal="true">
+      <button type="button" class="file-modal-close" onclick="closeFileModal()" aria-label="Schließen">×</button>
+      <div class="file-modal-header">
+        <span class="file-modal-icon" id="fileModalIcon"></span>
+        <div>
+          <div class="file-modal-name" id="fileModalTitle"></div>
+          <div class="file-modal-desc" id="fileModalDesc"></div>
+        </div>
+      </div>
+      <div class="file-modal-body" id="fileModalBody">
+        <!-- dynamisch befüllt per JS -->
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>

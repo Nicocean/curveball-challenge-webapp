@@ -1,33 +1,56 @@
-/* ═══════════════════════════════════════════════════════════════════════
-   Teil 2 — One-Step-View, Stepper, Streng-Hybrid-Validierung
-   ─────────────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Teil 2 — Setup-Landing + One-Step-View + Stepper + Streng-Hybrid-Validierung
+   ─────────────────────────────────────────────────────────────────────────── */
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 7;
 const state = {
   current: 1,
   attempts: {},       // { 1: 0, 2: 0, ... }
   cleanSolves: 0,     // Schritte ohne Fehlversuch UND ohne "Lösung zeigen"
   revealed: {},       // { 1: true, ... } — Lösung wurde offengelegt
+  optionalDone: false // Bonus-Aufgabe (Nachrechnen) korrekt gelöst?
 };
 
-/* ─── Solutions ────────────────────────────────────────────────────────── */
+/* ─── Solutions ─────────────────────────────────────────────────────────── */
+/*
+   Neue Nummerierung (7 Pflichtschritte):
+     1 = Zertifikat  (radio)
+     2 = Idee        (match)
+     3 = Angriff     (order)
+     4 = Fake-CA     (radio)
+     5 = Code-Sign   (radio)
+     6 = EV-Cert     (radio)
+     7 = Leitung     (radio)
+   Bonus (optional, nicht Teil der SOLUTIONS-Map):
+     Nachrechnen · k · k⁻¹ mod n = 1
+*/
 const SOLUTIONS = {
   1: { type: 'radio',  correct: 'a' },
   2: { type: 'match',  correct: { a: 'inv', b: 'point', c: 'mul', d: 'ret' } },
-  3: { type: 'text',   correct: ['1'] },
-  4: { type: 'order',  correct: { load: '1', k: '2', gprime: '3', sign: '4' } },
-  5: { type: 'radio',  correct: 'c' },
+  3: { type: 'order',  correct: { load: '1', k: '2', gprime: '3', sign: '4' } },
+  4: { type: 'radio',  correct: 'c' },
+  5: { type: 'radio',  correct: 'a' },
   6: { type: 'radio',  correct: 'a' },
-  7: { type: 'radio',  correct: 'a' },
-  8: { type: 'radio',  correct: 'b' },
+  7: { type: 'radio',  correct: 'b' },
 };
 
-/* ─── Init ─────────────────────────────────────────────────────────────── */
+const OPTIONAL_ANSWERS = ['1'];
+
+/* ─── Init ──────────────────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   for (let i = 1; i <= TOTAL_STEPS; i++) state.attempts[i] = 0;
+  // Setup-Card ist initial sichtbar, Steps sind komplett hidden bis startSteps().
   renderStepper();
-  showStep(1);
 });
+
+/* ─── Setup → Steps ────────────────────────────────────────────────────── */
+function startSteps() {
+  const setup = document.getElementById('setupCard');
+  const wrap = document.getElementById('stepsWrapper');
+  if (setup) setup.hidden = true;
+  if (wrap) wrap.hidden = false;
+  showStep(1);
+}
 
 /* ─── Stepper ──────────────────────────────────────────────────────────── */
 function renderStepper() {
@@ -71,7 +94,7 @@ function validateAndNext(step) {
   const sol = SOLUTIONS[step];
   let ok = false;
 
-  if (sol.type === 'radio') ok = validateRadio(step, sol.correct);
+  if (sol.type === 'radio')      ok = validateRadio(step, sol.correct);
   else if (sol.type === 'match') ok = validateMatch(step, sol.correct);
   else if (sol.type === 'text')  ok = validateText(step, sol.correct);
   else if (sol.type === 'order') ok = validateOrder(step, sol.correct);
@@ -102,7 +125,6 @@ function validateRadio(step, correct) {
     if (fb) { fb.textContent = 'Bitte eine Antwort auswählen.'; fb.className = 'task-feedback warn'; }
     return false;
   }
-  // Vorherige Markierungen zurück
   card.querySelectorAll('.option-label').forEach(l => l.classList.remove('was-correct', 'was-wrong'));
   if (chosen.value === correct) {
     chosen.closest('.option-label').classList.add('was-correct');
@@ -153,7 +175,6 @@ function validateOrder(step, correct) {
     chosen[key] = val;
     r.classList.remove('row-correct', 'row-wrong');
   });
-  // Doppelte Zahlen finden
   const seen = {};
   Object.values(chosen).forEach(v => { if (v) seen[v] = (seen[v] || 0) + 1; });
   rows.forEach(r => {
@@ -201,11 +222,37 @@ function revealSolution(step) {
   if (fb) { fb.textContent = 'Lösung angezeigt. Klicke auf „Prüfen & Weiter" um fortzufahren.'; fb.className = 'task-feedback warn'; }
 }
 
+/* ─── Optional (Bonus-Aufgabe im Schritt 2) ────────────────────────────── */
+function checkOptional() {
+  const input = document.getElementById('opt-input');
+  const fb = document.getElementById('fb-opt');
+  if (!input || !fb) return;
+  input.classList.remove('input-ok', 'input-err');
+  const raw = input.value.trim().toLowerCase();
+  if (!raw) {
+    fb.textContent = 'Bitte einen Wert eingeben.';
+    fb.className = 'task-feedback warn';
+    return;
+  }
+  if (OPTIONAL_ANSWERS.map(s => s.toLowerCase()).includes(raw)) {
+    input.classList.add('input-ok');
+    fb.textContent = '⭐ Richtig! k · k⁻¹ ist per Definition das neutrale Element der Multiplikation — also 1 (mod n). Extra-Badge freigeschaltet.';
+    fb.className = 'task-feedback ok';
+    state.optionalDone = true;
+  } else {
+    input.classList.add('input-err');
+    fb.textContent = '✗ Nicht ganz — denk an das neutrale Element der Multiplikation in (ℤ/nℤ)*.';
+    fb.className = 'task-feedback err';
+  }
+}
+
 /* ─── Lock + Advance ───────────────────────────────────────────────────── */
 function lockStep(step) {
   const card = document.querySelector(`.step-card[data-step="${step}"]`);
   if (!card) return;
-  card.querySelectorAll('input, select').forEach(el => el.disabled = true);
+  // WICHTIG: nur Elemente in Nicht-Optional-Panels sperren, damit das Optional-Feld
+  // im Schritt 2 auch nach dem Weitergehen bedienbar bleibt (falls jemand zurück-scrollt).
+  card.querySelectorAll('.task-panel:not(.task-panel-optional) input, .task-panel:not(.task-panel-optional) select').forEach(el => el.disabled = true);
   const nextBtn = document.getElementById('next-' + step);
   if (nextBtn) nextBtn.disabled = true;
   const solveBtn = document.getElementById('solve-' + step);
@@ -228,7 +275,6 @@ function showFinale() {
     finale.hidden = false;
     finale.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
-  // Stepper: alle als "done" markieren
   document.querySelectorAll('.stepper-node').forEach(n => {
     n.classList.remove('active');
     n.classList.add('done');
@@ -243,6 +289,188 @@ function showFinale() {
   if (el1) el1.textContent = totalAtt;
   if (el2) el2.textContent = `${state.cleanSolves}/${TOTAL_STEPS}`;
 
-  // Teil 2 als abgeschlossen markieren (für ggf. Gesamt-Finale-Check)
+  // Optional-Badge nur zeigen, wenn der Bonus gelöst wurde
+  const optPill = document.getElementById('optionalPill');
+  if (optPill && state.optionalDone) optPill.hidden = false;
+
   try { localStorage.setItem('curveball_part2_done', '1'); } catch (e) {}
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   OS-SWITCH (Setup-Landing)
+   ═════════════════════════════════════════════════════════════════════════ */
+function switchOS(os) {
+  document.querySelectorAll('.os-panel').forEach(p => { p.hidden = true; });
+  document.querySelectorAll('.os-tab').forEach(t => { t.classList.remove('active'); });
+  const panel = document.getElementById('os-' + os);
+  if (panel) panel.hidden = false;
+  const tab = document.querySelector('.os-tab[data-os="' + os + '"]');
+  if (tab) tab.classList.add('active');
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DOWNLOAD-OVERLAY MODAL
+   ═════════════════════════════════════════════════════════════════════════ */
+
+// Datei-spezifische Inhalte für das Overlay
+const FILE_CONFIGS = {
+  chain: {
+    icon: '📜',
+    name: 'comodoecccertificationauthority-ev-comodoca-com-chain.pem',
+    displayName: 'chain.pem',
+    desc: 'Echte COMODO ECC EV CA-Kette — Quelle für den öffentlichen Punkt Q',
+    steps: `
+      <div class="fmo-section">
+        <div class="fmo-label">Was ist diese Datei?</div>
+        <p>Die echte, öffentlich abrufbare Zertifikatskette von comodoca.com — drei Zertifikate in
+        einer PEM-Datei: Root CA → Intermediate CA (COMODO ECC Extended Validation) → End-Entity.
+        <code>badecparams.py</code> liest daraus den öffentlichen Punkt <em>Q</em> des Zwischenzertifikats,
+        um daraus den manipulierten Generator <em>G'</em> zu berechnen.</p>
+      </div>
+      <div class="fmo-section">
+        <div class="fmo-label">Nach dem Download</div>
+        <div class="fmo-code">mv comodoecccertificationauthority-ev-comodoca-com-chain.pem /pfad/zum/angriffsordner/</div>
+        <p class="fmo-hint">Wichtig: Die Datei muss <strong>exakt diesen langen Dateinamen</strong> behalten —
+        <code>badecparams.py</code> sucht nach diesem Namen im aktuellen Verzeichnis.</p>
+      </div>`,
+    errors: []
+  },
+  attack: {
+    icon: '🔑',
+    name: 'badecparams.py',
+    displayName: 'badecparams.py',
+    desc: 'Vollständiges Angriffsskript — erzeugt gefälschte CA und Endzertifikate',
+    steps: `
+      <div class="fmo-section">
+        <div class="fmo-label">Nach dem Download — ausführbar machen</div>
+        <div class="fmo-code">chmod +x badecparams.py</div>
+      </div>
+      <div class="fmo-section">
+        <div class="fmo-label">Ausführen (venv muss aktiv sein)</div>
+        <div class="fmo-code">source .venv/bin/activate
+./badecparams.py</div>
+        <p class="fmo-hint">Keine Argumente nötig — das Skript sucht die Chain-Datei automatisch
+        im aktuellen Verzeichnis.</p>
+      </div>`,
+    errors: [
+      { err: 'ModuleNotFoundError: No module named \'ecdsa\'',
+        fix: 'Virtuelle Umgebung nicht aktiv — zuerst <code>source .venv/bin/activate</code> ausführen.' },
+      { err: 'Permission denied: ./badecparams.py',
+        fix: 'Einmalig ausführbar machen: <code>chmod +x badecparams.py</code>' },
+      { err: 'FileNotFoundError / chain.pem not found',
+        fix: 'Die PEM-Datei fehlt im aktuellen Verzeichnis. Beide Dateien müssen im <em>selben Ordner</em> liegen.' }
+    ]
+  },
+  server: {
+    icon: '🌐',
+    name: 'httpd.py',
+    displayName: 'httpd.py',
+    desc: 'TLS-Miniserver — liefert die gefälschte Zertifikatskette per Handshake aus',
+    steps: `
+      <div class="fmo-section">
+        <div class="fmo-label">Nach dem Download — ausführbar machen</div>
+        <div class="fmo-code">chmod +x httpd.py</div>
+      </div>
+      <div class="fmo-section">
+        <div class="fmo-label">Ausführen (Terminal 1)</div>
+        <div class="fmo-code">./httpd.py localhost.key</div>
+        <p class="fmo-hint"><code>localhost.key</code> wird von <code>badecparams.py</code> erzeugt (Schritt 3).
+        Der Server bindet auf <code>127.0.0.1:8443</code> — Konsole offen lassen, mit
+        <kbd>Ctrl</kbd>+<kbd>C</kbd> beenden.</p>
+      </div>
+      <div class="fmo-section">
+        <div class="fmo-label">Verbindung testen (Terminal 2)</div>
+        <div class="fmo-code">openssl s_client -connect localhost:8443 -showcerts</div>
+      </div>`,
+    errors: [
+      { err: 'Permission denied: ./httpd.py',
+        fix: 'Einmalig ausführbar machen: <code>chmod +x httpd.py</code>' },
+      { err: 'FileNotFoundError: localhost.key',
+        fix: 'Schritt 3 noch nicht ausgeführt — <code>badecparams.py</code> erzeugt diese Datei.' },
+      { err: 'Address already in use (Port 8443)',
+        fix: 'Ein anderer Prozess belegt Port 8443. Prüfen: <code>ss -tlnp | grep 8443</code>, dann mit <code>kill &lt;PID&gt;</code> beenden.' }
+    ]
+  },
+  demo: {
+    icon: '🐍',
+    name: 'curveball_demo.py',
+    displayName: 'curveball_demo.py',
+    desc: 'Berechnet und verifiziert G\' = k⁻¹ · Q an echten Zahlen',
+    steps: `
+      <div class="fmo-section">
+        <div class="fmo-label">Ausführen (venv muss aktiv sein)</div>
+        <div class="fmo-code">python3 curveball_demo.py comodo-intermediate.crt 0</div>
+        <p class="fmo-hint">Argument <code>0</code> = zufälliges <em>k</em>. Das Skript liest
+        <em>Q</em> aus dem Zwischenzertifikat, berechnet <em>G'</em> und zeigt beide Verifikationen.</p>
+      </div>
+      <div class="fmo-section">
+        <div class="fmo-label">Erwartete Ausgabe</div>
+        <div class="fmo-code">  ✓  gültig mit G'   ← Angriff würde funktionieren
+  ✗  ungültig mit G  ← gepatchter Verifier würde ablehnen</div>
+      </div>`,
+    errors: [
+      { err: 'ModuleNotFoundError: No module named \'ecdsa\'',
+        fix: 'Virtuelle Umgebung nicht aktiv — zuerst <code>source .venv/bin/activate</code> ausführen.' }
+    ]
+  }
+};
+
+function openFileModal(filename, downloadUrl, configKey) {
+  const cfg = FILE_CONFIGS[configKey];
+  if (!cfg) return;
+
+  document.getElementById('fileModalIcon').textContent  = cfg.icon;
+  document.getElementById('fileModalTitle').textContent = cfg.displayName;
+  document.getElementById('fileModalDesc').textContent  = cfg.desc;
+
+  let errHTML = '';
+  if (cfg.errors && cfg.errors.length) {
+    errHTML = `<div class="fmo-section fmo-errors">
+      <div class="fmo-label">Häufige Fehler</div>
+      <div class="fmo-error-list">` +
+      cfg.errors.map(e => `
+        <div class="fmo-error-row">
+          <div class="fmo-error-msg"><code>${e.err}</code></div>
+          <div class="fmo-error-fix">${e.fix}</div>
+        </div>`).join('') +
+    `</div></div>`;
+  }
+
+  document.getElementById('fileModalBody').innerHTML =
+    `<a class="fmo-download-btn" href="${downloadUrl}" download="${filename}">
+       ↓ ${cfg.displayName} herunterladen
+     </a>` +
+    cfg.steps +
+    errHTML;
+
+  const backdrop = document.getElementById('fileModalBackdrop');
+  backdrop.hidden = false;
+  document.body.style.overflow = 'hidden';
+
+  // Focus auf Schließen-Button
+  setTimeout(() => backdrop.querySelector('.file-modal-close').focus(), 50);
+}
+
+function closeFileModal(event) {
+  // Nur schließen bei Klick auf Backdrop selbst (nicht auf Modal-Inhalt)
+  if (event && event.target !== document.getElementById('fileModalBackdrop')) return;
+  _doCloseFileModal();
+}
+
+function _doCloseFileModal() {
+  const backdrop = document.getElementById('fileModalBackdrop');
+  if (backdrop) backdrop.hidden = true;
+  document.body.style.overflow = '';
+}
+
+// X-Button schließt immer
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('fileModalBackdrop')
+    ?.querySelector('.file-modal-close')
+    ?.addEventListener('click', _doCloseFileModal);
+});
+
+// ESC schließt
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') _doCloseFileModal();
+});
