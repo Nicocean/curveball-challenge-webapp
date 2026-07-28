@@ -382,6 +382,11 @@ function showFinale() {
   if (optPill && state.optionalDone) optPill.hidden = false;
 
   try { localStorage.setItem('curveball_part2_done', '1'); } catch (e) {}
+
+  // Progress-Gate: Teil 2 abgeschlossen — grüner Haken auf Landing
+  if (window.Progress) {
+    window.Progress.markDone('part2');
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

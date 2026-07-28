@@ -53,6 +53,16 @@ function checkAnswers() {
     txt.textContent = '🎉 Alle Antworten korrekt!';
     detail.textContent = 'Du kannst jetzt zur Durchführung weitergehen.';
     nextBtn.classList.remove('hidden');
+    // Progress-Gate: Teil 1 abgeschlossen → Teil 2 auf Landing freischalten
+    if (window.Progress) {
+      window.Progress.markDone('part1');
+    }
+    // Direktlink oben aktualisieren (Schloss weg)
+    const topLink = document.querySelector('.top-nav a.nav-link.locked');
+    if (topLink) {
+      topLink.classList.remove('locked');
+      topLink.removeAttribute('aria-disabled');
+    }
     launchConfetti();
   } else {
     const wrong = TOTAL - score;

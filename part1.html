@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="de" data-theme="dark">
 <head>
+<script>
+// Progress-Gate: inline definiert (siehe index.html für Doku).
+(function () {
+  var KEY = 'curveball:progress';
+  function read() {
+    try { return JSON.parse(localStorage.getItem(KEY) || '{}'); }
+    catch (e) { return {}; }
+  }
+  function write(o) { localStorage.setItem(KEY, JSON.stringify(o)); }
+  window.Progress = {
+    isDone: function (p) { return read()[p] === true; },
+    markDone: function (p) { var s = read(); s[p] = true; write(s); },
+    reset: function () { localStorage.removeItem(KEY); },
+    debug: function () {
+      return { progress: localStorage.getItem(KEY), parsed: read() };
+    }
+  };
+})();
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Teil 1 – Einführung | CurveBall Challenge</title>
@@ -16,7 +35,16 @@
 <div class="page">
   <nav class="top-nav">
     <a href="/index.html" class="nav-link">← Menü</a>
-    <a href="/part2.html" class="nav-link">Teil 2: Durchführung →</a>
+    <a href="/part2.html" class="nav-link nav-link-with-lock locked" id="topNavPart2" aria-disabled="true">
+      <span class="nav-lock-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="14" height="14">
+          <path d="M7 10V7a5 5 0 0 1 10 0v3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          <rect x="4.5" y="10" width="15" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2.2"/>
+          <circle cx="12" cy="15.5" r="1.4" fill="currentColor"/>
+        </svg>
+      </span>
+      <span class="nav-link-label">Teil 2: Durchführung →</span>
+    </a>
   </nav>
 
   <div class="page-header">
@@ -220,6 +248,47 @@
     const block = document.getElementById(qid);
     if (block) block.classList.toggle('flipped');
   }
+
+  // Progress-Gate: Direktlink oben ggf. schon freischalten (Teil 1 zuvor abgeschlossen)
+  (function initTopNav() {
+    const link = document.getElementById('topNavPart2');
+    if (!link) return;
+    if (window.Progress && window.Progress.isDone('part1')) {
+      link.classList.remove('locked');
+      link.removeAttribute('aria-disabled');
+    }
+    link.addEventListener('click', (e) => {
+      if (link.classList.contains('locked')) {
+        e.preventDefault();
+        link.classList.remove('shake');
+        void link.offsetWidth;
+        link.classList.add('shake');
+      }
+    });
+  })();
+
+  // Theorie-FAB: Wave-Glow, bis er einmal geklickt wurde (pro Server-Sitzung)
+  // theorie.js fügt den Button dynamisch ein — wir warten kurz.
+  (function initTheorieGlow() {
+    const KEY = 'curveball:theorie-clicked';
+    if (sessionStorage.getItem(KEY) === '1') return;
+    const attach = () => {
+      const btn = document.getElementById('theorie-fab');
+      if (!btn) return false;
+      btn.classList.add('wave-glow-btn');
+      btn.addEventListener('click', () => {
+        sessionStorage.setItem(KEY, '1');
+        btn.classList.remove('wave-glow-btn');
+      }, { once: true });
+      return true;
+    };
+    if (attach()) return;
+    // Retry per animation frames (bis theorie.js seinen Button erzeugt hat)
+    let tries = 0;
+    const iv = setInterval(() => {
+      if (attach() || ++tries > 30) clearInterval(iv);
+    }, 100);
+  })();
 </script>
 <script src="/static/quiz.js"></script>
 </body>

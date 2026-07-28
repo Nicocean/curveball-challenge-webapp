@@ -36,14 +36,25 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         # Farbige, gut lesbare Konsolenausgabe
         print(f"  [{self.log_date_time_string()}] {format % args}")
 
+    def end_headers(self):
+        # Aggressiv Caching deaktivieren: In der Entwicklung ist es lästig,
+        # wenn der Browser altes JS/CSS ausliefert. HTML wird ohnehin schon
+        # unten mit no-store versehen, aber wir setzen es hier für alle
+        # Antworten inklusive statischer Assets.
+        self.send_header("Cache-Control", "no-store, must-revalidate")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+        super().end_headers()
+
+
 
 def main() -> None:
     print()
     print("  ╔═══════════════════════════════════════════════════╗")
     print("  ║   CurveBall Challenge — Lokaler Server            ║")
     print("  ╠═══════════════════════════════════════════════════╣")
-    print(f"  ║   URL:   http://localhost:{PORT}                    ║")
-    print(f"  ║   Root:  {BASE_DIR[:38]:<38}   ║")
+    print(f"  ║   URL:   http://localhost:{PORT}                     ║")
+    print(f"  ║   Root:  {BASE_DIR[:38]:<38} ║")
     print("  ║   Stop:  Strg+C                                   ║")
     print("  ╚═══════════════════════════════════════════════════╝")
     print()

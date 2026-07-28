@@ -1,6 +1,28 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+<script>
+// Progress-Gate: inline definiert, damit die API SOFORT verfügbar ist —
+// kein separater Fetch, kein Cache-Umweg, kein Timing-Issue.
+// State liegt in localStorage. Reset: F12-Konsole → Progress.reset()
+// oder localStorage.clear().
+(function () {
+  var KEY = 'curveball:progress';
+  function read() {
+    try { return JSON.parse(localStorage.getItem(KEY) || '{}'); }
+    catch (e) { return {}; }
+  }
+  function write(o) { localStorage.setItem(KEY, JSON.stringify(o)); }
+  window.Progress = {
+    isDone: function (p) { return read()[p] === true; },
+    markDone: function (p) { var s = read(); s[p] = true; write(s); },
+    reset: function () { localStorage.removeItem(KEY); },
+    debug: function () {
+      return { progress: localStorage.getItem(KEY), parsed: read() };
+    }
+  };
+})();
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CurveBall Challenge – CVE-2020-0601</title>
@@ -18,15 +40,37 @@
       <p class="subtitle">
         Eine Windows CryptoAPI-Schwachstelle — verstehen, nachvollziehen, durchführen.
       </p>
+      <p class="browser-hint" role="note">
+        Empfohlen: Firefox oder Chrome. In Brave <strong>Shields für localhost deaktivieren</strong>
+        (🦁-Icon in der Adressleiste), sonst wird der Fortschritt zwischen Seiten
+        verworfen.
+      </p>
       <div class="card-grid">
-        <a href="/part1.html" class="card">
+        <a href="/part1.html" class="card" data-card="part1">
           <div class="card-number">01</div>
+          <span class="card-check" aria-label="Abgeschlossen" title="Abgeschlossen">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path d="M5 12l4 4L19 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
           <h2>Einführung</h2>
           <p>Sechs Fragen zum Verständnis der Schwachstelle. Beantworte alle richtig, um weiterzumachen.</p>
           <span class="card-arrow">→</span>
         </a>
-        <a href="/part2.html" class="card">
+        <a href="/part2.html" class="card card-locked" data-card="part2" aria-disabled="true">
           <div class="card-number">02</div>
+          <span class="card-check" aria-label="Abgeschlossen" title="Abgeschlossen">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path d="M5 12l4 4L19 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="card-lock" aria-label="Gesperrt bis Teil 1 abgeschlossen ist" title="Schließe zuerst Teil 1 ab">
+            <svg viewBox="0 0 24 24" width="48" height="48" aria-hidden="true">
+              <path d="M7 10V7a5 5 0 0 1 10 0v3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+              <rect x="4.5" y="10" width="15" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2.2"/>
+              <circle cx="12" cy="15.5" r="1.4" fill="currentColor"/>
+            </svg>
+          </span>
           <h2>Durchführung</h2>
           <p>Setup-Check + sieben Schritte durch den Angriff — mit Befehlen, Erklärungen und einer optionalen Bonus-Aufgabe zum Nachrechnen.</p>
           <span class="card-arrow">→</span>
@@ -63,6 +107,47 @@
   <script src="/static/theme.js"></script>
   <script src="/static/theorie.js"></script>
   <script>
+    // Progress-Gate: Teil 2 sperren bis Teil 1 abgeschlossen, Haken anzeigen.
+    // Wird bei jedem Sichtbarwerden der Seite neu ausgewertet (inklusive
+    // Back/Forward-Cache-Restores und Tab-Fokus-Wechsel), damit der Zustand
+    // immer aktuell ist.
+    (function () {
+      const part1Card = document.querySelector('[data-card="part1"]');
+      const part2Card = document.querySelector('[data-card="part2"]');
+
+      function applyProgress() {
+        const p1Done = Progress.isDone('part1');
+        const p2Done = Progress.isDone('part2');
+
+        part1Card.classList.toggle('card-done', p1Done);
+
+        if (p1Done) {
+          part2Card.classList.remove('card-locked');
+          part2Card.removeAttribute('aria-disabled');
+        } else {
+          part2Card.classList.add('card-locked');
+          part2Card.setAttribute('aria-disabled', 'true');
+        }
+        part2Card.classList.toggle('card-done', p2Done);
+      }
+
+      applyProgress();
+      window.addEventListener('pageshow', applyProgress);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') applyProgress();
+      });
+
+      // Klick auf gelockte Karte abfangen
+      part2Card.addEventListener('click', (e) => {
+        if (part2Card.classList.contains('card-locked')) {
+          e.preventDefault();
+          part2Card.classList.remove('shake');
+          void part2Card.offsetWidth;
+          part2Card.classList.add('shake');
+        }
+      });
+    })();
+
     function openCveInfo() {
       document.getElementById('cve-modal').hidden = false;
       document.body.style.overflow = 'hidden';

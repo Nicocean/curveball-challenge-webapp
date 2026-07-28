@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="de" data-theme="dark">
 <head>
+<script>
+// Progress-Gate: inline definiert (siehe index.html für Doku).
+(function () {
+  var KEY = 'curveball:progress';
+  function read() {
+    try { return JSON.parse(localStorage.getItem(KEY) || '{}'); }
+    catch (e) { return {}; }
+  }
+  function write(o) { localStorage.setItem(KEY, JSON.stringify(o)); }
+  window.Progress = {
+    isDone: function (p) { return read()[p] === true; },
+    markDone: function (p) { var s = read(); s[p] = true; write(s); },
+    reset: function () { localStorage.removeItem(KEY); },
+    debug: function () {
+      return { progress: localStorage.getItem(KEY), parsed: read() };
+    }
+  };
+})();
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Teil 2 – Durchführung | CurveBall Challenge</title>
