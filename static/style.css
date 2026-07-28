@@ -2108,12 +2108,12 @@ pre code {
    REPO-OPTIONS (Schritt 0 — git clone / ZIP)
    ═════════════════════════════════════════════════════════════════════════ */
 .repo-options {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
   margin-bottom: 1.5rem;
 }
-@media (max-width: 600px) { .repo-options { grid-template-columns: 1fr; } }
+.repo-option .code-block { margin-top: 0.5rem; margin-bottom: 0; }
 
 .repo-option {
   background: var(--surface2);
@@ -2194,4 +2194,61 @@ pre code {
   font-size: 0.88rem;
   color: var(--text);
   margin-bottom: 1rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REPO-LINK (direkter GitHub-Link über den Repo-Options)
+   ═════════════════════════════════════════════════════════════════════════ */
+.repo-link-line {
+  margin: 0 0 1rem 0;
+}
+.repo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.9rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+.repo-link:hover {
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface2));
+  border-color: var(--accent);
+  text-decoration: none;
+}
+.repo-link-icon {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SETUP-REQ-LIST (schlanke Voraussetzungs-Liste statt Karten-Grid)
+   ═════════════════════════════════════════════════════════════════════════ */
+.setup-req-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.25rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.setup-req-list li {
+  padding: 0.5rem 0.85rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+.setup-req-list li strong {
+  color: var(--text);
+  margin-right: 0.25rem;
+}
+.setup-req-list code {
+  font-size: 0.85em;
 }

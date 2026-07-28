@@ -61,7 +61,16 @@
 
     <!-- Repo-Download -->
     <h3 class="setup-subtitle">Schritt 1 — Repo herunterladen</h3>
-    <p class="setup-req-help">Alle benötigten Dateien liegen in einem GitHub-Repo. Wähle eine der beiden Optionen:</p>
+    <p class="setup-req-help">
+      Alle benötigten Dateien (<code>badecparams.py</code>, <code>httpd.py</code>, <code>curveball_demo.py</code>,
+      <code>comodoecccertificationauthority-ev-comodoca-com-chain.pem</code>) liegen in einem GitHub-Repo:
+    </p>
+    <p class="repo-link-line">
+      <a class="repo-link" href="https://github.com/Nicocean/badecparams-curveball" target="_blank" rel="noopener">
+        <span class="repo-link-icon">↗</span>
+        github.com/Nicocean/badecparams-curveball
+      </a>
+    </p>
     <div class="repo-options">
       <div class="repo-option">
         <div class="repo-option-label">Option A — per Git klonen <span class="repo-badge">empfohlen</span></div>
@@ -78,24 +87,12 @@ cd badecparams-curveball</div>
     </div>
 
     <h3 class="setup-subtitle">Schritt 2 — Voraussetzungen</h3>
-    <div class="setup-req-grid">
-      <div class="setup-req">
-        <div class="setup-req-label">Python</div>
-        <div class="setup-req-val"><code>python3 --version</code> ≥ 3.13</div>
-      </div>
-      <div class="setup-req">
-        <div class="setup-req-label">OpenSSL</div>
-        <div class="setup-req-val"><code>openssl version</code> ≥ 1.1 — im PATH verfügbar</div>
-      </div>
-      <div class="setup-req">
-        <div class="setup-req-label">Git</div>
-        <div class="setup-req-val">Für Option A — bei den meisten Linux/macOS-Systemen vorinstalliert</div>
-      </div>
-      <div class="setup-req">
-        <div class="setup-req-label">Port 8443</div>
-        <div class="setup-req-val">Muss frei sein — kein <code>sudo</code> nötig</div>
-      </div>
-    </div>
+    <ul class="setup-req-list">
+      <li><strong>Python</strong> ― <code>python3 --version</code> ≥ 3.13</li>
+      <li><strong>OpenSSL</strong> ― <code>openssl version</code> ≥ 1.1 im PATH</li>
+      <li><strong>Git</strong> ― für Option A (auf den meisten Linux/macOS-Systemen vorinstalliert)</li>
+      <li><strong>Port 8443</strong> ― muss frei sein, kein <code>sudo</code> nötig</li>
+    </ul>
 
     <h3 class="setup-subtitle">Schritt 3 — Terminal einrichten</h3>
     <p class="setup-req-help">Alle Befehle sind identisch auf Linux, macOS und Windows (WSL 2). Terminal im Repo-Ordner öffnen, dann:</p>
@@ -323,16 +320,7 @@ X509v3 Basic Constraints: critical
             die Gleichung an konkreten Zahlen — einmal mit <em>G'</em>, einmal mit dem echten <em>G</em>.
           </p>
 
-          <button type="button" class="file-trigger"
-            onclick="openFileModal('curveball_demo.py', '/downloads/curveball_demo.py', 'demo')">
-            <span class="file-trigger-icon">🐍</span>
-            <div class="file-trigger-info">
-              <div class="file-trigger-name">curveball_demo.py</div>
-              <div class="file-trigger-desc">Berechnet und verifiziert G' = k⁻¹ · Q an echten Zahlen</div>
-            </div>
-            <span class="file-trigger-arrow">→ Details &amp; Download</span>
-          </button>
-
+          <div class="setup-already-there">✅ <code>curveball_demo.py</code> liegt bereits im Repo-Ordner aus Schritt 0.</div>
           <div class="code-block">python3 curveball_demo.py comodo-intermediate.crt 0</div>
           <div class="code-block">  ✓  gültig mit G'   ← Angriff würde funktionieren
   ✗  ungültig mit G  ← gepatchter Verifier würde ablehnen</div>
