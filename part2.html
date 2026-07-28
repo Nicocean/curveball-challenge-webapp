@@ -463,10 +463,12 @@ localhost.key         # dazugehöriger Schlüssel</div>
       </header>
 
       <div class="step-hint" id="hint-4" hidden>
-        Vergleiche die Ausgabe unten Zeile für Zeile mit dem Auszug aus <strong>Schritt 1</strong>.
-        Der öffentliche Punkt <code>Q</code> ist identisch, die Seriennummer ebenfalls. Was steht
-        <em>anders</em> da, wo in Schritt 1 nur <code>ASN1 OID: prime256v1</code> stand?
-        → Genau dieser eine Unterschied macht den Angriff.
+        <code>openssl x509 -text -noout</code> zeigt die <em>interpretierte</em> Ansicht: wenn
+        <em>p</em>, <em>a</em>, <em>b</em> und <em>n</em> zu <code>prime256v1</code> passen, druckt es
+        einfach diesen Namen aus — der Generator <em>G</em> wird dabei <strong>gar nicht</strong>
+        überprüft oder angezeigt. Um den manipulierten Generator zu sehen, müsste man
+        <code>openssl asn1parse</code> nehmen oder die Roh-Bytes vergleichen. Genau diese
+        Blindstelle in Standard-Tools ist der Kern von CVE-2020-0601.
       </div>
 
       <p>
@@ -475,9 +477,9 @@ localhost.key         # dazugehöriger Schlüssel</div>
         (unverändert). Beide werden später gemeinsam über die Leitung ausgeliefert.
       </p>
       <p class="step-note">
-        Führe den Command unten in deinem Terminal aus und vergleiche deinen Output
-        <strong>Zeile für Zeile</strong> mit dem Referenz-Auszug aus Schritt 1 darunter. Der
-        Unterschied ist die Antwort auf die Kontrollfrage.
+        Führe den Command unten in deinem Terminal aus und vergleiche deinen Output mit dem
+        Referenz-Auszug aus Schritt 1 darunter. Achte auf <strong>jede Zeile</strong> —
+        <em>Subject</em>, <em>Issuer</em>, <em>Public Key</em>, <em>Extensions</em>.
       </p>
       <div class="practice-box">
         <div class="practice-line"><strong>Vorbedingung:</strong> Schritt 3 wurde ausgeführt, <code>intermediateCA.crt</code> existiert.</div>
@@ -485,24 +487,25 @@ localhost.key         # dazugehöriger Schlüssel</div>
       <div class="code-block">openssl x509 -in intermediateCA.crt -text -noout</div>
 
       <p class="step-note" style="margin-top: 1rem;">
-        <strong>Referenz-Auszug aus Schritt 1</strong> (echtes CA-Zert, zum Vergleich mit deinem Terminal-Output):
+        <strong>Referenz-Auszug aus Schritt 1</strong> (echtes CA-Zert):
       </p>
       <div class="code-block code-block-output">Public Key Algorithm: id-ecPublicKey
-    ASN1 OID: prime256v1
-    NIST CURVE: P-256
+    Public-Key: (256 bit)
     pub:
         04:57:70:1a:3f:...          ← öffentlicher Punkt Q
+    ASN1 OID: prime256v1
+    NIST CURVE: P-256
 X509v3 Basic Constraints: critical
     CA:TRUE                          ← darf weitere Zertifikate ausstellen</div>
 
       <div class="task-panel">
-        <div class="task-label">Deine Aufgabe · Kontrollfrage</div>
-        <div class="task-question">Worin unterscheiden sich die Ausgaben von Schritt 1 (echtes CA-Zertifikat) und Schritt 4 (gefälschtes)?</div>
+        <div class="task-label">Deine Aufgabe · Beobachtung</div>
+        <div class="task-question">Was fällt beim Vergleich der beiden Ausgaben auf?</div>
         <div class="options" data-task="s4">
-          <label class="option-label"><input type="radio" name="s4" value="a"><span class="radio-dot"></span>Im öffentlichen Schlüssel (Q-Bytes).</label>
-          <label class="option-label"><input type="radio" name="s4" value="b"><span class="radio-dot"></span>In der Seriennummer.</label>
-          <label class="option-label"><input type="radio" name="s4" value="c"><span class="radio-dot"></span>Statt <code>ASN1 OID: prime256v1</code> stehen die Domain-Parameter ausgeschrieben — mit einem anderen Generator.</label>
-          <label class="option-label"><input type="radio" name="s4" value="d"><span class="radio-dot"></span>Im Inhaber (Subject).</label>
+          <label class="option-label"><input type="radio" name="s4" value="a"><span class="radio-dot"></span>Die Ausgaben sind praktisch identisch — beide zeigen <code>ASN1 OID: prime256v1</code> und dieselben Public-Key-Bytes. Der Unterschied wird von <code>openssl x509 -text</code> nicht sichtbar gemacht, obwohl das Zertifikat manipuliert ist.</label>
+          <label class="option-label"><input type="radio" name="s4" value="b"><span class="radio-dot"></span>Der Public-Key-Punkt <em>Q</em> weicht ab — die ersten Bytes <code>04:57:70:1a:3f:...</code> sind in Schritt 4 anders.</label>
+          <label class="option-label"><input type="radio" name="s4" value="c"><span class="radio-dot"></span>Die Zeile <code>ASN1 OID: prime256v1</code> fehlt in Schritt 4 und wurde durch einen Block mit expliziten Parametern (<code>Prime</code>, <code>A</code>, <code>B</code>, <code>Generator</code>) ersetzt.</label>
+          <label class="option-label"><input type="radio" name="s4" value="d"><span class="radio-dot"></span>Die Signatur-Algorithmus-Zeile hat gewechselt — in Schritt 1 <code>ecdsa-with-SHA256</code>, in Schritt 4 <code>ecdsa-with-SHA384</code>.</label>
         </div>
         <div class="task-feedback" id="fb-4"></div>
       </div>
@@ -529,11 +532,11 @@ X509v3 Basic Constraints: critical
       </header>
 
       <div class="step-hint" id="hint-5" hidden>
-        Der Befehl gibt die eingebettete Zertifikatskette aus <code>authenticode.spc</code> aus.
-        Schau dir die <strong>oberste</strong> <code>subject=</code>-Zeile an: wessen Zertifikat ist das —
-        eine echte CA, oder etwas anderes? Und für wen wurde es ausgestellt? Der <code>issuer=</code>
-        direkt darunter zeigt, wer es unterschrieben hat — und dieser Issuer ist genau die
-        <strong>manipulierte Intermediate-CA</strong> aus Schritt 3.
+        Ein reguläres Code-Signing-Zertifikat wäre von einer <strong>echten</strong> Code-Signing-CA
+        ausgestellt (z.B. <em>COMODO Code Signing CA</em>). Schau dir in deinem Output die
+        <strong>oberste</strong> <code>subject=</code>-Zeile an: der Common Name verrät sofort, ob
+        das ein normales Zert oder etwas Anderes ist. Und dann die <code>issuer=</code>-Zeile direkt
+        darunter — wer hat das unterschrieben?
       </div>
 
       <p>
@@ -544,21 +547,28 @@ X509v3 Basic Constraints: critical
       </p>
       <p class="step-note">
         Der Command unten listet alle Zertifikate, die in der SPC-Datei stecken. Führe ihn aus
-        und schau dir vor allem die <strong>erste subject/issuer-Zeile</strong> in deinem Terminal an.
+        und vergleiche <strong>deinen</strong> Terminal-Output mit der Referenz darunter —
+        so würde eine <em>echte</em> Code-Signing-Kette aussehen.
       </p>
       <div class="practice-box">
         <div class="practice-line"><strong>Vorbedingung:</strong> Schritt 3 wurde ausgeführt, <code>authenticode.spc</code> existiert.</div>
       </div>
       <div class="code-block">openssl pkcs7 -inform DER -in authenticode.spc -print_certs -noout</div>
-      <p class="step-note" style="margin-top:1rem;">Beispielhafter Ausschnitt aus der Ausgabe (Werte gekürzt):</p>
-      <div class="code-block code-block-output">subject=... CN=BADECPARAMS CVE-2020-0601 Code Signing Authority ...
-issuer =... CN=COMODO ECC Extended Validation Secure Server CA
 
-subject=... CN=COMODO ECC Extended Validation Secure Server CA
-issuer =... CN=COMODO ECC Certification Authority
+      <p class="step-note" style="margin-top:1rem;">
+        <strong>So sähe eine offizielle Code-Signing-Kette aus</strong> (Referenz, kein Angriff):
+      </p>
+      <div class="code-block code-block-output">subject=... CN=&lt;Firmenname&gt; Code Signing     # Software-Hersteller
+issuer =... CN=COMODO Code Signing CA            # offizieller Aussteller
 
-subject=... CN=COMODO ECC Extended Validation Secure Server CA
-issuer =... CN=COMODO ECC Certification Authority</div>
+subject=... CN=COMODO Code Signing CA            # Zwischen-CA
+issuer =... CN=COMODO Certification Authority    # Comodo-Root
+
+subject=... CN=COMODO Certification Authority    # Root, selbstsigniert
+issuer =... CN=COMODO Certification Authority</div>
+      <p class="step-note" style="margin-top:.5rem; font-size:.9rem;">
+        Vergleiche das mit deinem eigenen Output — was steht dort in der obersten Zeile?
+      </p>
 
       <div class="task-panel">
         <div class="task-label">Deine Aufgabe</div>
@@ -594,39 +604,56 @@ issuer =... CN=COMODO ECC Certification Authority</div>
       </header>
 
       <div class="step-hint" id="hint-6" hidden>
-        Der grüne EV-Balken erschien in älteren Browsern, wenn zwei Bedingungen zutrafen: das
-        Endzertifikat trägt eine bekannte EV-Policy-Kennung <em>und</em> die Kette endet bei einer
-        als EV-fähig gelisteten Zertifizierungsstelle. Der Subject-Name (hier absichtlich „PayPal, Inc.")
-        wurde dann prominent im UI angezeigt.
+        Der <strong>grüne EV-Balken</strong> (Extended Validation) wurde von Browsern wie Chrome,
+        Firefox und Internet Explorer bis ca. 2019 in der Adressleiste angezeigt, wenn zwei
+        Bedingungen zutrafen: (1) das Endzertifikat trägt eine bekannte <em>EV-Policy-OID</em>
+        (jede CA hat eine eigene, hartcodiert im Browser) und (2) die Kette endet bei einer als
+        EV-fähig gelisteten Zertifizierungsstelle. War beides erfüllt, zeigte der Browser den
+        <em>Firmennamen aus dem Subject</em> grün hinterlegt neben dem Schloss an — z.B.
+        „PayPal, Inc. [US]“. Ein besonders starkes Vertrauens-Signal.
       </div>
 
       <p>
-        Das dritte Endzertifikat ist <code>localhost.crt</code> — das TLS-Zertifikat für den Handshake
-        in Schritt 7. Es ist ausgestellt auf <code>nsa.gov</code>, <code>www.nsa.gov</code>,
-        <code>microsoft.com</code>, <code>www.microsoft.com</code> und <code>localhost</code>,
-        trägt bewusst den Subject-Namen „PayPal, Inc." und die Extended-Validation-Kennung von COMODO.
-        Signiert wurde es von der gefälschten Zertifizierungsstelle aus Schritt 4.
+        Der Angriff wäre technisch schon überzeugend, wenn nur das gewöhnliche Schloss-Symbol
+        erscheinen würde. Aber der Trick geht weiter: <code>localhost.crt</code> — das TLS-Endzertifikat
+        für Schritt 7 — wurde gezielt so gebaut, dass ein ungepatchter Windows-Browser sogar den
+        <strong>grünen EV-Balken mit „PayPal, Inc.“</strong> daneben anzeigt.
+      </p>
+      <p>Zwei Zutaten machen das möglich:</p>
+      <ul style="margin: .5rem 0 1rem 1.5rem; line-height: 1.7;">
+        <li>Der Subject-Name lautet absichtlich <code>O=PayPal, Inc.</code> — das ist der Text, den der
+          Browser später im grünen Balken anzeigt.</li>
+        <li>Das Zertifikat trägt die Extended-Validation-Policy-OID <code>1.3.6.1.4.1.6449.1.2.1.5.1</code>
+          — die offizielle EV-Kennung von Comodo. Windows kennt diese OID und hält die Kette
+          für EV, weil er sie – dank CurveBall – auf die (gefälschte) Comodo-CA zurückführt.</li>
+      </ul>
+      <p>
+        Zum Vollpaket gehört: das Zertifikat gilt zusätzlich für <code>nsa.gov</code>,
+        <code>www.nsa.gov</code>, <code>microsoft.com</code>, <code>www.microsoft.com</code> und
+        <code>localhost</code> — alle als Subject Alternative Names eingetragen. Damit ließe sich
+        der TLS-Handshake später unter jedem dieser Namen führen.
       </p>
       <div class="practice-box">
         <div class="practice-line"><strong>Vorbedingung:</strong> Schritt 3 wurde ausgeführt, <code>localhost.crt</code> existiert.</div>
-        <div class="practice-line"><strong>Was zu sehen sein wird:</strong> mehrere Subject-Alternative-Names für berühmte Domains, ein Policy-Eintrag mit COMODOs EV-Kennung, und dass das Zertifikat unter der gefälschten CA hängt.</div>
+        <div class="practice-line"><strong>Ziel:</strong> bestätige, dass die zwei EV-Zutaten (Subject-Name, EV-Policy-OID) tatsächlich im Zertifikat stehen.</div>
       </div>
       <div class="code-block">openssl x509 -in localhost.crt -text -noout</div>
-      <div class="code-block">Subject: ... O=PayPal, Inc. ...
+      <p class="step-note" style="margin-top:1rem;">Die relevanten Zeilen im Output:</p>
+      <div class="code-block code-block-output">Subject: ... O=PayPal, Inc. ...              # Firmenname für Balken
 X509v3 Subject Alternative Name:
     DNS:localhost, DNS:nsa.gov, DNS:www.nsa.gov,
     DNS:microsoft.com, DNS:www.microsoft.com
 X509v3 Certificate Policies:
-    Policy: 1.3.6.1.4.1.6449.1.2.1.5.1   # COMODO EV-Policy-Kennung</div>
+    Policy: 1.3.6.1.4.1.6449.1.2.1.5.1        # COMODO EV-Policy-OID</div>
 
       <div class="task-panel">
         <div class="task-label">Deine Aufgabe</div>
-        <div class="task-question">Warum zeigt ein ungepatchter Browser die Verbindung als „Extended Validation" an?</div>
+        <div class="task-question">Warum zeigt ein ungepatchter Browser die Verbindung mit grünem EV-Balken und „PayPal, Inc.“ an?</div>
         <div class="options" data-task="s6">
-          <label class="option-label"><input type="radio" name="s6" value="a"><span class="radio-dot"></span>Weil das Endzertifikat eine bekannte EV-Policy-Kennung trägt und die Kette bei einer als EV-fähig gelisteten Zertifizierungsstelle endet.</label>
-          <label class="option-label"><input type="radio" name="s6" value="b"><span class="radio-dot"></span>Weil der Subject-Name „PayPal" enthält.</label>
-          <label class="option-label"><input type="radio" name="s6" value="c"><span class="radio-dot"></span>Weil <code>localhost</code> als DNS-Eintrag drinsteht.</label>
-          <label class="option-label"><input type="radio" name="s6" value="d"><span class="radio-dot"></span>Weil das Zertifikat einen SHA-256-Hash verwendet.</label>
+          <label class="option-label"><input type="radio" name="s6" value="a"><span class="radio-dot"></span>Weil das Endzertifikat die COMODO-EV-Policy-OID <code>1.3.6.1.4.1.6449.1.2.1.5.1</code> trägt <em>und</em> die Kette dank CurveBall bei der (gefälschten) EV-fähigen Comodo-CA endet.</label>
+          <label class="option-label"><input type="radio" name="s6" value="b"><span class="radio-dot"></span>Weil der Subject-Name den String „PayPal, Inc.“ enthält — Browser interpretieren jeden PayPal-String automatisch als EV.</label>
+          <label class="option-label"><input type="radio" name="s6" value="c"><span class="radio-dot"></span>Weil <code>localhost</code> als DNS-Eintrag in den SANs steht und Windows lokalen Zertifikaten automatisch EV-Status gibt.</label>
+          <label class="option-label"><input type="radio" name="s6" value="d"><span class="radio-dot"></span>Weil das Zertifikat mit SHA-256 signiert wurde und SHA-256 für EV zwingend nötig ist.</label>
         </div>
         <div class="task-feedback" id="fb-6"></div>
       </div>
@@ -675,10 +702,11 @@ X509v3 Certificate Policies:
         <div class="practice-line"><strong>Vorbedingung:</strong> Schritt 3 wurde ausgeführt. <code>localhost.key</code>, <code>localhost.crt</code> und <code>intermediateCA.crt</code> liegen im aktuellen Ordner.</div>
         <div class="practice-line"><strong>Terminal 1 — Server starten:</strong></div>
       </div>
-      <div class="code-block">./httpd.py localhost.key</div>
+      <div class="code-block">python3 httpd.py localhost.key</div>
       <p style="font-size:.9rem; color:var(--text-muted);">
-        Der Server bindet sich auf <code>127.0.0.1:8443</code> und wartet auf Verbindungen. Läuft im
-        Vordergrund — Konsole offen lassen, mit <kbd>Ctrl</kbd>+<kbd>C</kbd> beenden.
+        Der Server bindet sich auf <code>0.0.0.0:8443</code> und wartet auf Verbindungen. Läuft im
+        Vordergrund — Konsole offen lassen, mit <kbd>Ctrl</kbd>+<kbd>C</kbd> beenden. Port 8443 ist
+        unprivilegiert, es sind <strong>keine <code>sudo</code>-Rechte</strong> nötig.
       </p>
       <div class="practice-box">
         <div class="practice-line"><strong>Terminal 2 — Handshake auslösen:</strong></div>

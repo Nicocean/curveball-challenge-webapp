@@ -29,7 +29,7 @@ const SOLUTIONS = {
   1: { type: 'radio',  correct: 'a' },
   2: { type: 'match',  correct: { a: 'inv', b: 'point', c: 'mul', d: 'ret' } },
   3: { type: 'order',  correct: { load: '1', k: '2', gprime: '3', sign: '4' } },
-  4: { type: 'radio',  correct: 'c' },
+  4: { type: 'radio',  correct: 'a' },
   5: { type: 'radio',  correct: 'a' },
   6: { type: 'radio',  correct: 'a' },
   7: { type: 'radio',  correct: 'b' },

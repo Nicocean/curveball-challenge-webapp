@@ -756,16 +756,15 @@ a:hover { text-decoration: underline; }
 .options { display: flex; flex-direction: column; gap: 0.55rem; }
 
 .option-label {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 0.7rem 1rem;
+  display: block;
+  padding: 0.7rem 1rem 0.7rem 2.6rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   cursor: pointer;
   font-size: 0.95rem;
   transition: background 0.15s, border-color 0.15s;
-  line-height: 1.4;
+  line-height: 1.5;
+  position: relative;
 }
 .option-label:hover {
   background: var(--surface2);
@@ -778,9 +777,10 @@ a:hover { text-decoration: underline; }
   height: 18px;
   border: 2px solid var(--border);
   border-radius: 50%;
-  flex-shrink: 0;
-  margin-top: 2px;
-  display: flex;
+  position: absolute;
+  left: 0.9rem;
+  top: 0.85rem;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: border-color 0.15s;
