@@ -22,7 +22,6 @@ curveball-challenge/
 - **server.py**: Der zentrale Einstiegspunkt. Startet einen lokalen Webserver, der die Dateien ausliefert.
 - **index.html / part1.html / part2.html**: Die Haupt-HTML-Seiten der Webanwendung.
 - **static/**: Enthält CSS-Styling, JavaScript-Logik für Quiz und Interaktionen sowie die Theorie-Seite.
-- **downloads/**: Beinhaltet die Python-Skripte, die im Rahmen der Challenge heruntergeladen und lokal ausgeführt werden müssen.
 
 ## Ausführung
 
