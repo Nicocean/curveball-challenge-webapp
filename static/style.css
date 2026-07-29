@@ -135,6 +135,36 @@ a:hover { text-decoration: underline; }
 }
 .browser-hint strong { color: var(--text); font-weight: 600; }
 
+.progress-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.7rem;
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.progress-status { opacity: 0.85; }
+.reset-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-family: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--border);
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: color 160ms ease, text-decoration-color 160ms ease;
+}
+.reset-link:hover,
+.reset-link:focus-visible {
+  color: var(--text);
+  text-decoration-color: currentColor;
+  outline: none;
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

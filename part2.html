@@ -208,9 +208,9 @@ X509v3 Basic Constraints: critical
         <div class="task-label">Deine Aufgabe</div>
         <div class="task-question">Wie sind die Kurven-Parameter in diesem Zertifikat angegeben? Wähle die Aussage, die zum Auszug oben passt.</div>
         <div class="options" data-task="s1">
-          <label class="option-label"><input type="radio" name="s1" value="a"><span class="radio-dot"></span>Über eine Kennnummer <em>(benannte Kurve — nur der Name der Kurve steht drin).</em></label>
-          <label class="option-label"><input type="radio" name="s1" value="b"><span class="radio-dot"></span>Als vollständig ausgeschriebene Domain-Parameter <em>(explizit — alle sechs Werte stehen im Zertifikat).</em></label>
-          <label class="option-label"><input type="radio" name="s1" value="c"><span class="radio-dot"></span>Über einen SHA-256-Fingerprint der Kurve.</label>
+          <label class="option-label"><input type="radio" name="s1" value="a"><span class="radio-dot"></span>Als vollständig ausgeschriebene Domain-Parameter <em>(explizit — alle sechs Werte stehen im Zertifikat).</em></label>
+          <label class="option-label"><input type="radio" name="s1" value="b"><span class="radio-dot"></span>Über einen SHA-256-Fingerprint der Kurve.</label>
+          <label class="option-label"><input type="radio" name="s1" value="c"><span class="radio-dot"></span>Über eine Kennnummer <em>(benannte Kurve — nur der Name der Kurve steht drin).</em></label>
           <label class="option-label"><input type="radio" name="s1" value="d"><span class="radio-dot"></span>Gar nicht — nur der öffentliche Punkt <em>Q</em> reicht.</label>
         </div>
         <div class="task-feedback" id="fb-1"></div>
@@ -282,19 +282,23 @@ X509v3 Basic Constraints: critical
             <code class="match-code">k_inverse = inverse_mod(k, curve.order)</code>
             <select class="match-select" data-key="a">
               <option value="">— wählen —</option>
-              <option value="inv">Berechnet k⁻¹</option>
               <option value="point">Baut Punkt Q</option>
+              <option value="hash">Hasht mit SHA-256</option>
+              <option value="inv">Berechnet k⁻¹</option>
               <option value="mul">Multipliziert k⁻¹ · Q</option>
               <option value="ret">Gibt Koordinaten zurück</option>
+              <option value="add">Addiert zwei Punkte</option>
             </select>
           </div>
           <div class="match-row">
             <code class="match-code">Q = Point(curve.curve, Qx, Qy, curve.order)</code>
             <select class="match-select" data-key="b">
               <option value="">— wählen —</option>
-              <option value="inv">Berechnet k⁻¹</option>
-              <option value="point">Baut Punkt Q</option>
               <option value="mul">Multipliziert k⁻¹ · Q</option>
+              <option value="point">Baut Punkt Q</option>
+              <option value="add">Addiert zwei Punkte</option>
+              <option value="inv">Berechnet k⁻¹</option>
+              <option value="hash">Hasht mit SHA-256</option>
               <option value="ret">Gibt Koordinaten zurück</option>
             </select>
           </div>
@@ -302,20 +306,24 @@ X509v3 Basic Constraints: critical
             <code class="match-code">G = Q * k_inverse</code>
             <select class="match-select" data-key="c">
               <option value="">— wählen —</option>
-              <option value="inv">Berechnet k⁻¹</option>
-              <option value="point">Baut Punkt Q</option>
-              <option value="mul">Multipliziert k⁻¹ · Q</option>
+              <option value="add">Addiert zwei Punkte</option>
               <option value="ret">Gibt Koordinaten zurück</option>
+              <option value="hash">Hasht mit SHA-256</option>
+              <option value="inv">Berechnet k⁻¹</option>
+              <option value="mul">Multipliziert k⁻¹ · Q</option>
+              <option value="point">Baut Punkt Q</option>
             </select>
           </div>
           <div class="match-row">
             <code class="match-code">return (G.x(), G.y())</code>
             <select class="match-select" data-key="d">
               <option value="">— wählen —</option>
-              <option value="inv">Berechnet k⁻¹</option>
-              <option value="point">Baut Punkt Q</option>
+              <option value="hash">Hasht mit SHA-256</option>
               <option value="mul">Multipliziert k⁻¹ · Q</option>
+              <option value="point">Baut Punkt Q</option>
               <option value="ret">Gibt Koordinaten zurück</option>
+              <option value="add">Addiert zwei Punkte</option>
+              <option value="inv">Berechnet k⁻¹</option>
             </select>
           </div>
         </div>
@@ -347,14 +355,15 @@ X509v3 Basic Constraints: critical
           </p>
 
           <div class="task-panel task-panel-optional">
-            <div class="task-label">Bonus-Aufgabe · Zahlwert</div>
+            <div class="task-label">Bonus-Aufgabe · Terminal-Output</div>
             <div class="task-question">
-              In der Formel <em>k · G' = k · k⁻¹ · Q = Q</em> steckt die entscheidende Vereinfachung.
-              Was ergibt <strong>k · k⁻¹ mod n</strong> ?
+              Führe das Skript oben aus und schau in den Output. Das Skript verifiziert intern
+              die Kernformel und druckt eine Zeile mit einem Häkchen — sie beginnt mit
+              <code>✓ Prüfung k · G' = </code>. <strong>Welcher Punkt steht dort?</strong>
+              (Ein einzelner Buchstabe.)
             </div>
             <div class="input-row">
-              <input type="text" class="task-input" id="opt-input" placeholder="Zahl eingeben" autocomplete="off" inputmode="numeric">
-              <span style="font-size:.9rem; color:var(--text-muted);">(mod n)</span>
+              <input type="text" class="task-input" id="opt-input" placeholder="z. B. X" autocomplete="off" maxlength="3">
               <button type="button" class="btn btn-ghost btn-small" onclick="checkOptional()">Prüfen</button>
             </div>
             <div class="task-feedback" id="fb-opt"></div>
@@ -521,10 +530,10 @@ X509v3 Basic Constraints: critical
         <div class="task-label">Deine Aufgabe · Beobachtung</div>
         <div class="task-question">Was fällt beim Vergleich der beiden Ausgaben auf?</div>
         <div class="options" data-task="s4">
-          <label class="option-label"><input type="radio" name="s4" value="a"><span class="radio-dot"></span>Die Ausgaben sind praktisch identisch — beide zeigen <code>ASN1 OID: prime256v1</code> und dieselben Public-Key-Bytes. Der Unterschied wird von <code>openssl x509 -text</code> nicht sichtbar gemacht, obwohl das Zertifikat manipuliert ist.</label>
-          <label class="option-label"><input type="radio" name="s4" value="b"><span class="radio-dot"></span>Der Public-Key-Punkt <em>Q</em> weicht ab — die ersten Bytes <code>04:57:70:1a:3f:...</code> sind in Schritt 4 anders.</label>
-          <label class="option-label"><input type="radio" name="s4" value="c"><span class="radio-dot"></span>Die Zeile <code>ASN1 OID: prime256v1</code> fehlt in Schritt 4 und wurde durch einen Block mit expliziten Parametern (<code>Prime</code>, <code>A</code>, <code>B</code>, <code>Generator</code>) ersetzt.</label>
-          <label class="option-label"><input type="radio" name="s4" value="d"><span class="radio-dot"></span>Die Signatur-Algorithmus-Zeile hat gewechselt — in Schritt 1 <code>ecdsa-with-SHA256</code>, in Schritt 4 <code>ecdsa-with-SHA384</code>.</label>
+          <label class="option-label"><input type="radio" name="s4" value="a"><span class="radio-dot"></span>Der Public-Key-Punkt <em>Q</em> weicht ab — die ersten Bytes <code>04:57:70:1a:3f:...</code> sind in Schritt 4 anders.</label>
+          <label class="option-label"><input type="radio" name="s4" value="b"><span class="radio-dot"></span>Die Zeile <code>ASN1 OID: prime256v1</code> fehlt in Schritt 4 und wurde durch einen Block mit expliziten Parametern (<code>Prime</code>, <code>A</code>, <code>B</code>, <code>Generator</code>) ersetzt.</label>
+          <label class="option-label"><input type="radio" name="s4" value="c"><span class="radio-dot"></span>Die Signatur-Algorithmus-Zeile hat gewechselt — in Schritt 1 <code>ecdsa-with-SHA256</code>, in Schritt 4 <code>ecdsa-with-SHA384</code>.</label>
+          <label class="option-label"><input type="radio" name="s4" value="d"><span class="radio-dot"></span>Die Ausgaben sind praktisch identisch — beide zeigen <code>ASN1 OID: prime256v1</code> und dieselben Public-Key-Bytes. Der Unterschied wird von <code>openssl x509 -text</code> nicht sichtbar gemacht, obwohl das Zertifikat manipuliert ist.</label>
         </div>
         <div class="task-feedback" id="fb-4"></div>
       </div>
@@ -669,8 +678,8 @@ X509v3 Certificate Policies:
         <div class="task-label">Deine Aufgabe</div>
         <div class="task-question">Warum zeigt ein ungepatchter Browser die Verbindung mit grünem EV-Balken und „PayPal, Inc.“ an?</div>
         <div class="options" data-task="s6">
-          <label class="option-label"><input type="radio" name="s6" value="a"><span class="radio-dot"></span>Weil das Endzertifikat die COMODO-EV-Policy-OID <code>1.3.6.1.4.1.6449.1.2.1.5.1</code> trägt <em>und</em> die Kette dank CurveBall bei der (gefälschten) EV-fähigen Comodo-CA endet.</label>
-          <label class="option-label"><input type="radio" name="s6" value="b"><span class="radio-dot"></span>Weil der Subject-Name den String „PayPal, Inc.“ enthält — Browser interpretieren jeden PayPal-String automatisch als EV.</label>
+          <label class="option-label"><input type="radio" name="s6" value="a"><span class="radio-dot"></span>Weil der Subject-Name den String „PayPal, Inc.“ enthält — Browser interpretieren jeden PayPal-String automatisch als EV.</label>
+          <label class="option-label"><input type="radio" name="s6" value="b"><span class="radio-dot"></span>Weil das Endzertifikat die COMODO-EV-Policy-OID <code>1.3.6.1.4.1.6449.1.2.1.5.1</code> trägt <em>und</em> die Kette dank CurveBall bei der (gefälschten) EV-fähigen Comodo-CA endet.</label>
           <label class="option-label"><input type="radio" name="s6" value="c"><span class="radio-dot"></span>Weil <code>localhost</code> als DNS-Eintrag in den SANs steht und Windows lokalen Zertifikaten automatisch EV-Status gibt.</label>
           <label class="option-label"><input type="radio" name="s6" value="d"><span class="radio-dot"></span>Weil das Zertifikat mit SHA-256 signiert wurde und SHA-256 für EV zwingend nötig ist.</label>
         </div>
@@ -747,8 +756,8 @@ X509v3 Certificate Policies:
         </div>
         <div class="options" data-task="s7">
           <label class="option-label"><input type="radio" name="s7" value="a"><span class="radio-dot"></span>SHA-256 muss gebrochen sein und der Angreifer muss den privaten Schlüssel <em>d</em> der CA kennen.</label>
-          <label class="option-label"><input type="radio" name="s7" value="b"><span class="radio-dot"></span>Der Verifier übernimmt den Generator aus dem Zertifikat, und der öffentliche Punkt <em>Q</em> stimmt mit dem einer vertrauten Zertifizierungsstelle überein.</label>
-          <label class="option-label"><input type="radio" name="s7" value="c"><span class="radio-dot"></span>Der Client nutzt Firefox und die Seriennummer ist doppelt.</label>
+          <label class="option-label"><input type="radio" name="s7" value="b"><span class="radio-dot"></span>Der Client nutzt Firefox und die Seriennummer ist doppelt.</label>
+          <label class="option-label"><input type="radio" name="s7" value="c"><span class="radio-dot"></span>Der Verifier übernimmt den Generator aus dem Zertifikat, und der öffentliche Punkt <em>Q</em> stimmt mit dem einer vertrauten Zertifizierungsstelle überein.</label>
           <label class="option-label"><input type="radio" name="s7" value="d"><span class="radio-dot"></span>Das Zertifikat ist abgelaufen und der Angreifer hat Netzwerkzugang.</label>
         </div>
         <div class="task-feedback" id="fb-7"></div>

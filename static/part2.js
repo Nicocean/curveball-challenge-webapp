@@ -26,16 +26,16 @@ const state = {
      Nachrechnen · k · k⁻¹ mod n = 1
 */
 const SOLUTIONS = {
-  1: { type: 'radio',  correct: 'a' },
+  1: { type: 'radio',  correct: 'c' },  // benannte Kurve
   2: { type: 'match',  correct: { a: 'inv', b: 'point', c: 'mul', d: 'ret' } },
   3: { type: 'order',  correct: { load: '1', k: '2', gprime: '3', sign: '4' } },
-  4: { type: 'radio',  correct: 'a' },
-  5: { type: 'radio',  correct: 'a' },
-  6: { type: 'radio',  correct: 'a' },
-  7: { type: 'radio',  correct: 'b' },
+  4: { type: 'radio',  correct: 'd' },  // Ausgaben praktisch identisch
+  5: { type: 'radio',  correct: 'a' },  // manipulierte Intermediate-CA
+  6: { type: 'radio',  correct: 'b' },  // EV-Policy-OID + Kette bei Comodo-CA
+  7: { type: 'radio',  correct: 'c' },  // Generator aus Zertifikat + Q stimmt
 };
 
-const OPTIONAL_ANSWERS = ['1'];
+const OPTIONAL_ANSWERS = ['q'];  // Aus Terminal-Zeile: "✓ Prüfung k · G' = Q bestanden"
 
 /* ─── Init ──────────────────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
@@ -322,12 +322,12 @@ function checkOptional() {
   }
   if (OPTIONAL_ANSWERS.map(s => s.toLowerCase()).includes(raw)) {
     input.classList.add('input-ok');
-    fb.textContent = '⭐ Richtig! k · k⁻¹ ist per Definition das neutrale Element der Multiplikation — also 1 (mod n). Extra-Badge freigeschaltet.';
+    fb.textContent = '⭐ Richtig! Aus k · G\' = k · (k⁻¹ · Q) = (k · k⁻¹) · Q = 1 · Q = Q. Damit ist k ein gültiger „privater Schlüssel“ relativ zu G\'. Extra-Badge freigeschaltet.';
     fb.className = 'task-feedback ok';
     state.optionalDone = true;
   } else {
     input.classList.add('input-err');
-    fb.textContent = '✗ Nicht ganz — denk an das neutrale Element der Multiplikation in (ℤ/nℤ)*.';
+    fb.textContent = '✗ Nicht ganz — schau nochmal in den Terminal-Output. Die Zeile mit dem Häkchen zeigt es direkt an.';
     fb.className = 'task-feedback err';
   }
 }

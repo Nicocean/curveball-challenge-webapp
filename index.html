@@ -45,7 +45,7 @@
         (🦁-Icon in der Adressleiste), sonst wird der Fortschritt zwischen Seiten
         verworfen.
       </p>
-      <div class="card-grid">
+      <div class="card-grid" id="cardGrid">
         <a href="/part1.html" class="card" data-card="part1">
           <div class="card-number">01</div>
           <span class="card-check" aria-label="Abgeschlossen" title="Abgeschlossen">
@@ -75,6 +75,13 @@
           <p>Setup-Check + sieben Schritte durch den Angriff — mit Befehlen, Erklärungen und einer optionalen Bonus-Aufgabe zum Nachrechnen.</p>
           <span class="card-arrow">→</span>
         </a>
+      </div>
+
+      <div class="progress-footer" id="progressFooter" hidden>
+        <span class="progress-status" id="progressStatus"></span>
+        <button type="button" class="reset-link" id="resetBtn" onclick="resetProgress()">
+          Fortschritt zurücksetzen
+        </button>
       </div>
     </div>
   </main>
@@ -115,6 +122,9 @@
       const part1Card = document.querySelector('[data-card="part1"]');
       const part2Card = document.querySelector('[data-card="part2"]');
 
+      const footer = document.getElementById('progressFooter');
+      const statusEl = document.getElementById('progressStatus');
+
       function applyProgress() {
         const p1Done = Progress.isDone('part1');
         const p2Done = Progress.isDone('part2');
@@ -129,7 +139,28 @@
           part2Card.setAttribute('aria-disabled', 'true');
         }
         part2Card.classList.toggle('card-done', p2Done);
+
+        // Reset-Footer nur zeigen, wenn irgendein Fortschritt gespeichert ist.
+        const anyDone = p1Done || p2Done;
+        footer.hidden = !anyDone;
+        if (anyDone) {
+          if (p1Done && p2Done) {
+            statusEl.textContent = 'Beide Teile abgeschlossen •';
+          } else if (p1Done) {
+            statusEl.textContent = 'Teil 1 abgeschlossen •';
+          } else if (p2Done) {
+            statusEl.textContent = 'Teil 2 abgeschlossen •';
+          }
+        }
       }
+
+      window.resetProgress = function () {
+        if (!confirm('Fortschritt wirklich zurücksetzen? Beide Teile werden wieder auf Anfang gesetzt.')) return;
+        Progress.reset();
+        // Zusätzliche Legacy-Keys aus früheren Versionen aufräumen.
+        try { localStorage.removeItem('curveball_part2_done'); } catch (e) {}
+        applyProgress();
+      };
 
       applyProgress();
       window.addEventListener('pageshow', applyProgress);
